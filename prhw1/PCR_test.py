@@ -24,3 +24,4 @@ em_pivot_transformed = cvt.htm_vect3(em_pivot_transformed_homogeneous)
 fig, ax = plotter.plot_data_2(em_pivot_transformed, opt_pivot, "Transformed EM Pivot", "Optical Pivot", number_points=True)
 plt.show()
 
+print("Test")
