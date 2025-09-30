@@ -145,3 +145,30 @@ def inv(M):
     M_inv[:3, :3] = R.T
     M_inv[:3, 3] = -R.T @ t
     return M_inv
+
+
+def vect3_htm(v):
+    # Convert 3D points to homogeneous transformation matrices
+    # INPUT (3,) or (n,3) / OUTPUT (4,4) or (n,4,4)
+    assert v.shape == (3,) or v.shape[1:] == (3,)
+    if v.shape == (3,):
+        M = np.eye(4)
+        M[:3, 3] = v
+    else:
+        M = np.zeros((v.shape[0], 4, 4))
+        for i in range(v.shape[0]):
+            M[i, :, :] = np.eye(4)
+            M[i, :3, 3] = v[i]
+    return M
+
+def htm_vect3(M):
+    # Convert homogeneous transformation matrices to 3D points
+    # INPUT (4,4) or (n,4,4) / OUTPUT (3,) or (n,3)
+    assert M.shape == (4, 4) or M.shape[1:] == (4, 4)
+    if len(M.shape) == 2:
+        v = M[:3, 3]
+    elif len(M.shape) == 3:
+        v = np.zeros((M.shape[0], 3))
+        for i in range(M.shape[0]):
+            v[i] = M[i, :3, 3]
+    return v

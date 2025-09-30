@@ -7,44 +7,72 @@ except ImportError:
     import convert as c
 
 
-def point_cloud_registration(a, b):
-    # Point cloud registration
-    # The function would give a transformation matrix between two frames given
-    # two sets of coordinates of the same set of points from the two frames
-    # INPUT : a and b points sould have same size (n,3)
-    # OUTPUT: Homogeneous transformation matrix so that b = F_E * a
-    #
+def point_cloud_registration(a, b, allow_scale=False):
+    """
+    Estimate rigid (or similarity) transform aligning points a -> b via SVD (Kabsch/Umeyama).
 
+    Parameters
+    ----------
+    a : (n,3) array
+        Source points (with known correspondences to b).
+    b : (n,3) array
+        Target points.
+    allow_scale : bool
+        If True, also estimate an isotropic scale (Umeyama). Otherwise, pure rigid.
 
-    assert a.shape == b.shape
-    assert len(a.shape) == 2 and a.shape[1] == 3
-    a0 = a[0, :]
-    b0 = b[0, :]
+    Returns
+    -------
+    R : (3,3) array
+        Rotation matrix.
+    t : (3,) array
+        Translation vector.
+    s : float
+        Scale (1.0 if allow_scale=False).
+    E : (4,4) array
+        Homogeneous transform so that b ≈ (s*R) @ a + t.
 
-    a = a - a0
-    b = b - b0
+    Notes
+    -----
+    - Uses proper rotation (det(R)=+1); if reflection occurs, the last singular vector is flipped.
+    - Requires >= 3 non-collinear points for a well-conditioned solution.
+    """
+    a = np.asarray(a, dtype=float)
+    b = np.asarray(b, dtype=float)
+    assert a.shape == b.shape and a.ndim == 2 and a.shape[1] == 3
+    n = a.shape[0]
+    assert n >= 3, "Need at least 3 points."
 
-    H = np.zeros((3, 3))
-    for i in range(3):
-        for j in range(3):
-            H[i, j] = np.dot(a[:, i], b[:, j])
+    # 1) centroids
+    ca = a.mean(axis=0)
+    cb = b.mean(axis=0)
 
-    Delta = (H[1, 2] - H[2, 1], H[2, 0] - H[0, 2], H[0, 1] - H[1, 0])
-    G = np.zeros((4, 4))
-    G[0, 0] = np.trace(H)
-    G[0, 1:], G[1:, 0] = Delta, Delta
-    G[1:, 1:] = H + H.T - np.trace(H) * np.eye(3)
+    # 2) center
+    A = a - ca
+    B = b - cb
 
-    _, eig_vector = np.linalg.eig(G)
-    wxyz = eig_vector[:, 0]
-    xyzw = np.zeros(wxyz.shape)
-    xyzw[:3], xyzw[3] = wxyz[1:], wxyz[0]
+    # 3) covariance
+    H = A.T @ B / n 
+
+    # 4) SVD
+    U, S, Vt = np.linalg.svd(H)
+    V = Vt.T
+
+    # 5) proper rotation
+    D = np.eye(3)
+    if np.linalg.det(V @ U.T) < 0:
+        D[2, 2] = -1.0
+    R = V @ D @ U.T
+
+    # 6) translation
+    t = cb - (R @ ca)
+
+    # Homogeneous transform
     E = np.eye(4)
-    R = Rotation.from_quat(xyzw).as_matrix()
-    E[:3, :3] = R
-    E[:3, 3] = b0 - R @ a0
+    E[:3, :3] = R  
+    E[:3, 3] = t
 
     return E
+
 
 
 def test():
@@ -71,7 +99,6 @@ def test():
     np.printoptions(suppress=True, precision=5)
     # print("\nb2 = E2 @ a\n", b2)
     print("\nb and b2 difference (all 0 mean it's correct)\n", b - b2)
-
 
 if __name__ == "__main__":
     test()
