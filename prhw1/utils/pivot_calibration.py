@@ -25,7 +25,7 @@ import numpy as np
 # 
 # Assume
 
-def pivot_calibration(R_all, p_all):
+def pivot_calibration(T_all):
   """
   Perform pivot calibration
 
@@ -36,15 +36,25 @@ def pivot_calibration(R_all, p_all):
       Measured translation vectors of tool in world.
 
   Returns:
-    p_tool: 3x1 numpy array.
+    p_tip: 3x1 numpy array.
       Calculated translation vector of tip in tool.
     p_pivot: 3x1 numpy array.
       Calculated translation vector of pivot point in world
   """
-  j = len(A)
+  j = len(T)
   A = np.zeros(3 * j, 6)
   b = np.zeros(3 * j, 1)
 
-  # build A
-  for i in j:
+  for i, T in enumerate(T_all):
+        R_curr = T[:3, :3]
+        t_curr = T[:3, 3]
+        
+        A[3*i:3*i+3, :3] = R_curr
+        A[3*i:3*i+3, 3:] = -np.eye(3)
+        b[3*i:3*i+3] = t_curr
+  x = np.linalg.lstsq(A, b)
+  p_tip = x[:3]
+  p_pivot = x[3:]
+  
+  return p_tip, p_pivot
     
