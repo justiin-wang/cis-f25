@@ -87,7 +87,7 @@ class CalibrationTools:
     """
     j = len(T_all)
     A = np.zeros((3 * j, 6))
-    b = np.zeros((3 * j, 1))
+    b = np.zeros(3 * j)
 
     for i, T in enumerate(T_all):
           R_curr = T[:3, :3]
@@ -95,7 +95,7 @@ class CalibrationTools:
           
           A[3*i:3*i+3, :3] = R_curr
           A[3*i:3*i+3, 3:] = -np.eye(3)
-          b[3*i:3*i+3] = t_curr
+          b[3*i:3*i+3] = -t_curr
     x, _, _, _ = np.linalg.lstsq(A, b)
     p_tip = x[:3]
     p_pivot = x[3:]
