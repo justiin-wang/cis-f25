@@ -1,6 +1,6 @@
 # tests/test_calibrator.py
 import numpy as np
-from utils.calibrator import CalibrationTools
+from prhw1.utils.calibrator import CalibrationTools
 
 def test_pivot_calibration():
     np.random.seed(0)

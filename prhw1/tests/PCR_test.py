@@ -1,15 +1,16 @@
-# prhw1/tests/PCR_test.py
-import os
-import sys
+# # prhw1/tests/PCR_test.py
+# import os
+# import sys
+# import numpy as np
+
+# # ---- Robust import: works with `python -m prhw1.tests.PCR_test` and with direct runs ----
+# try:
+#     from prhw1.utils.calibrator import CalibrationTools
+# except ModuleNotFoundError:
+#     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+#     from utils.calibrator import CalibrationTools
 import numpy as np
-
-# ---- Robust import: works with `python -m prhw1.tests.PCR_test` and with direct runs ----
-try:
-    from prhw1.utils.calibrator import CalibrationTools
-except ModuleNotFoundError:
-    sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-    from utils.calibrator import CalibrationTools
-
+from prhw1.utils.calibrator import CalibrationTools
 
 def _pose_errors(R_est, t_est, R_true, t_true):
     """Return (rotation error in deg, translation L2 error)."""
@@ -39,7 +40,7 @@ def random_pcr_test(num_points=100, seed=42, angle_deg=30.0, translation=(20.0, 
     4) Estimate with PCR (calibrator object)
     5) Report errors (rotation angle, translation norm, RMSE)
     """
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng()
     original_points = rng.random((num_points, 3)) * 100.0
     transformed_points = original_points.copy()
 
