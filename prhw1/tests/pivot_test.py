@@ -1,4 +1,3 @@
-# tests/test_calibrator.py
 import numpy as np
 from prhw1.utils.calibrator import CalibrationTools
 
