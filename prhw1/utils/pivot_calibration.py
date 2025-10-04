@@ -41,9 +41,9 @@ def pivot_calibration(T_all):
     p_pivot: 3x1 numpy array.
       Calculated translation vector of pivot point in world
   """
-  j = len(T)
-  A = np.zeros(3 * j, 6)
-  b = np.zeros(3 * j, 1)
+  j = len(T_all)
+  A = np.zeros((3 * j, 6))
+  b = np.zeros((3 * j, 1))
 
   for i, T in enumerate(T_all):
         R_curr = T[:3, :3]
@@ -52,9 +52,9 @@ def pivot_calibration(T_all):
         A[3*i:3*i+3, :3] = R_curr
         A[3*i:3*i+3, 3:] = -np.eye(3)
         b[3*i:3*i+3] = t_curr
-  x = np.linalg.lstsq(A, b)
-  p_tip = x[:3]
-  p_pivot = x[3:]
+  x, _, _, _ = np.linalg.lstsq(A, b)
+  p_tip = x[:3].flatten()
+  p_pivot = x[3:].flatten()
   
   return p_tip, p_pivot
     
