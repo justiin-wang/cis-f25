@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from utils import plot as plotter
 from utils import point_cloud_registration as pcr
 from utils import convert as cvt
+from utils import parse as parser
 
 """
 Unit Test for PCR
@@ -14,8 +15,7 @@ Unit Test for PCR
 3. Uses PCR to estimate the transformation
 4. Compares the estimated transformation to the known transformation
 """
-
-if __name__ == "__main__":
+def random_pcr_test():
     # 1. Create a random point cloud
     num_points = 100
     np.random.seed(42)  
@@ -81,3 +81,14 @@ if __name__ == "__main__":
     
     fig, ax = plotter.plot_data_2(transformed_points, retransformed_points, "Known Transform", "PCR Re-transform", number_points=False)
     plt.show()
+
+def register_em_opt_trackers():
+    path = "prhw1/data/pa1-debug-a-calbody.txt"
+    D_frames, A_frames, C_frames = parser.parse_calreadings(path)
+    print("D_frames shape:", D_frames.shape)
+    print("A_frames shape:", A_frames.shape)
+    print("C_frames shape:", C_frames.shape)
+
+
+if __name__ == "__main__":
+    random_pcr_test()

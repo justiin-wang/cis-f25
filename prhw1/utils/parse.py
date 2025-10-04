@@ -80,50 +80,27 @@ def parse_optpivot(path):
         H_frames.append(data[start+Nd:start+Nd+Nh])
     return np.array(D_frames), np.array(H_frames)
 
+if __name__ == "__main__":
+    # Verify parsing functions are good by checking shapes
+    calbody_path = "prhw1/data/pa1-debug-a-calbody.txt"
+    d, a, c = parse_calbody(calbody_path)
+    print("D points shape:", d.shape)
+    print("A points shape:", a.shape)
+    print("C points shape:", c.shape)
 
-def parse_ct_fiducials(path):
-    with open(path, 'r') as f:
-        header = f.readline().strip()
-    parts = header.replace(',', ' ').split()
-    Nb = int(parts[0])
+    calreadings_path = "prhw1/data/pa1-debug-a-calreadings.txt"
+    D_frames, A_frames, C_frames = parse_calreadings(calreadings_path)
+    print("D_frames shape:", D_frames.shape)
+    print("A_frames shape:", A_frames.shape)
+    print("C_frames shape:", C_frames.shape)
 
-    df = pd.read_csv(path, header=None, skiprows=1)
-    data = df.iloc[:, :3].to_numpy(float)
+    empivot_path = "prhw1/data/pa1-debug-a-empivot.txt"
+    empivot_frames = parse_empivot(empivot_path)
+    print("Empivot frames shape:", empivot_frames.shape)
 
-    if data.shape[0] != Nb:
-        raise ValueError(f"CT-FIDUCIALS row mismatch in {path}: got {data.shape[0]}, expected {Nb}")
-    return data
-
-
-def parse_em_fiducials(path):
-    with open(path, 'r') as f:
-        header = f.readline().strip()
-    parts = header.replace(',', ' ').split()
-    Ng, Nb = map(int, parts[:2])
-
-    df = pd.read_csv(path, header=None, skiprows=1)
-    data = df.iloc[:, :3].to_numpy(float)
-
-    expected = Ng * Nb
-    if data.shape[0] != expected:
-        raise ValueError(f"EM-FIDUCIALS row mismatch in {path}: got {data.shape[0]}, expected {expected}")
-
-    frames = [data[i*Ng:(i+1)*Ng] for i in range(Nb)]
-    return np.array(frames)
+    optpivot_path = "prhw1/data/pa1-debug-a-optpivot.txt"
+    D_opt_frames, H_frames = parse_optpivot(optpivot_path)
+    print("D_opt_frames shape:", D_opt_frames.shape)
+    print("H_frames shape:", H_frames.shape)
 
 
-def parse_em_nav(path):
-    with open(path, 'r') as f:
-        header = f.readline().strip()
-    parts = header.replace(',', ' ').split()
-    Ng, Nframes = map(int, parts[:2])
-
-    df = pd.read_csv(path, header=None, skiprows=1)
-    data = df.iloc[:, :3].to_numpy(float)
-
-    expected = Ng * Nframes
-    if data.shape[0] != expected:
-        raise ValueError(f"EM-NAV row mismatch in {path}: got {data.shape[0]}, expected {expected}")
-
-    frames = [data[i*Ng:(i+1)*Ng] for i in range(Nframes)]
-    return np.array(frames)
