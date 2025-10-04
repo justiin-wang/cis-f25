@@ -1,14 +1,3 @@
-# # prhw1/tests/PCR_test.py
-# import os
-# import sys
-# import numpy as np
-
-# # ---- Robust import: works with `python -m prhw1.tests.PCR_test` and with direct runs ----
-# try:
-#     from prhw1.utils.calibrator import CalibrationTools
-# except ModuleNotFoundError:
-#     sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-#     from utils.calibrator import CalibrationTools
 import numpy as np
 from prhw1.utils.calibrator import CalibrationTools
 
