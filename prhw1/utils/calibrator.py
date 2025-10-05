@@ -1,8 +1,9 @@
 import numpy as np
 
 class CalibrationTools:
-  def __init__(self, name="Tool"):
+  def __init__(self, name="Tool", local_frame_points = None):
     self.name=name
+    self.local_frame_points = local_frame_points
   def point_cloud_registration(self, a, b, allow_scale=False):
     """
     Estimate rigid (or similarity) transform aligning points a -> b via SVD (Kabsch/Umeyama).
