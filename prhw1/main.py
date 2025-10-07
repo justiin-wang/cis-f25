@@ -48,21 +48,21 @@ tool_origin = G_all[0].mean(axis=0)
 emprobe.local_frame_points = G_all[0] - tool_origin
 # Calculate PCR for each reading
 T_all = np.zeros((len(G_all),4,4))
-emprobe_expecteH_all = []
+emprobe_expected_all = []
 for k,frame in enumerate(G_all):
   F_G = emprobe.point_cloud_registration(emprobe.local_frame_points,frame)
   T_all[k] = F_G
 
   emprobe_expected = (F_G[:3, :3] @ emprobe.local_frame_points.T + F_G[:3, 3:4]).T
-  emprobe_expecteH_all.append(emprobe_expected)
+  emprobe_expected_all.append(emprobe_expected)
 # Perform pivot calibration
 p_tip_em,p_pivot_em = emprobe.pivot_calibration(T_all)
 
-emprobe_expecteH_all = np.array(emprobe_expecteH_all)
+emprobe_expected_all = np.array(emprobe_expected_all)
 G_all = np.array(G_all)
 
 # Flatten for plotting: (frames, points, 3) -> (frames*points, 3)
-emprobe_expected_flat = emprobe_expecteH_all.reshape(-1, 3)
+emprobe_expected_flat = emprobe_expected_all.reshape(-1, 3)
 G_all_flat = G_all.reshape(-1, 3)
 
 # Plot EM probe point clouds
@@ -93,36 +93,39 @@ ax.legend()
 ax.set_title("Tool frame markers and tip")
 plt.show()
 
-# Problem 6
+# --------------Problem 6---------------
 optprobe = CalibrationTools("optprobe")
-_, H_all = parser.parse_optpivot("prhw1\data\pa1-debug-f-optpivot.txt")
+D_all, H_all = parser.parse_optpivot("prhw1\data\pa1-debug-f-optpivot.txt")
+d, _, _ = parser.parse_calbody("prhw1/data/pa1-debug-f-calbody.txt")
 
 H_all_em = np.zeros(np.shape(H_all))
-R_D = F_D[:3,:3]
-t_D = F_D[:3,3:4]
 
-for k,frame in enumerate(H_all):
-   H_all_em[k] = (R_D @ frame.T + t_D).T
 # calculate tool frame
-tool_origin = H_all_em[0].mean(axis=0)
-optprobe.local_frame_points = H_all_em[0] - tool_origin
+tool_origin = H_all[0].mean(axis=0)
+optprobe.local_frame_points = H_all[0] - tool_origin
 # Calculate PCR for each reading
 T_all = np.zeros((len(H_all_em),4,4))
-emprobe_expecteH_all = []
-for k,frame in enumerate(H_all_em):
-  F_G = optprobe.point_cloud_registration(optprobe.local_frame_points,frame)
+optprobe_expected_all = []
+for k,frame in enumerate(H_all):
+  F_D = optprobe.point_cloud_registration(d, D_all[k])
+  R_D = F_D[:3,:3]
+  t_D = F_D[:3,3:4]
+  H_em = (R_D @ frame.T + t_D).T
+  H_all_em[k] = H_em
+
+  F_G = optprobe.point_cloud_registration(optprobe.local_frame_points,H_em)
   T_all[k] = F_G
 
-  emprobe_expected = (F_G[:3, :3] @ optprobe.local_frame_points.T + F_G[:3, 3:4]).T
-  emprobe_expecteH_all.append(emprobe_expected)
+  optprobe_expected = (F_G[:3, :3] @ optprobe.local_frame_points.T + F_G[:3, 3:4]).T
+  optprobe_expected_all.append(optprobe_expected)
 # Perform pivot calibration
 p_tip_opt,p_pivot_opt = optprobe.pivot_calibration(T_all)
 
-emprobe_expecteH_all = np.array(emprobe_expecteH_all)
+optprobe_expected_all = np.array(optprobe_expected_all)
 H_all_em = np.array(H_all_em)
 
 # Flatten for plotting: (frames, points, 3) -> (frames*points, 3)
-optprobe_expected_flat = emprobe_expecteH_all.reshape(-1, 3)
+optprobe_expected_flat = optprobe_expected_all.reshape(-1, 3)
 H_all_em_flat = H_all_em.reshape(-1, 3)
 
 # Plot optical probe point clouds  
