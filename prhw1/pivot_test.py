@@ -1,9 +1,11 @@
 import numpy as np
-from prhw1.utils.calibrator import CalibrationTools
+from utils.calibrator import CalibrationTools
 
 def test_pivot_calibration():
-    np.random.seed(0)
+    # np.random.seed(0)
+    # Pick a coordinate for tip in tool
     p_tip_true = np.array([0.1, 0.2, 0.3])
+    # Pick a coordinate for pivot in world
     p_pivot_true = np.array([1.0, 2.0, 3.0])
 
     T_all = []
@@ -17,23 +19,21 @@ def test_pivot_calibration():
             [axis[1]*axis[0]*(1-c)+axis[2]*s, c+axis[1]**2*(1-c), axis[1]*axis[2]*(1-c)-axis[0]*s],
             [axis[2]*axis[0]*(1-c)-axis[1]*s, axis[2]*axis[1]*(1-c)+axis[0]*s, c+axis[2]**2*(1-c)]
         ])
+        # Rearranging the pivot calibration equation to solve for the
+        # displacement vector normally given by PCR
         p = p_pivot_true - R @ p_tip_true
         T = np.eye(4)
         T[:3,:3] = R
         T[:3,3] = p
         T_all.append(T)
 
-    # Create object
-    tool = CalibrationTools("TestTool")
+    tool = CalibrationTools("pivot test")
     p_tip_est, p_pivot_est = tool.pivot_calibration(T_all)
-
-    print(p_tip_est)
-    print(p_tip_true)
 
     # Check results
     assert np.allclose(p_tip_est, p_tip_true, atol=1e-6)
     assert np.allclose(p_pivot_est, p_pivot_true, atol=1e-6)
-    print("Pivot calibration test passed!")
+    print("Pivot test pass")
 
 if __name__ == "__main__":
     test_pivot_calibration()

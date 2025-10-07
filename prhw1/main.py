@@ -6,10 +6,7 @@ from utils import plot as plotter
 
 tool = CalibrationTools("test")
 
-print(tool.name)
-
-# do problem 4 here
-
+# Problem 4
 d_known, a_known, c_known = parser.parse_calbody("prhw1/data/pa1-debug-c-calbody.txt")
 D_frames, A_frames, C_frames = parser.parse_calreadings("prhw1/data/pa1-debug-c-calreadings.txt")
 C_expected_pc = [] # k C_expected point cloud
@@ -33,6 +30,7 @@ C_frames = np.array(C_frames)
 fig, ax = plotter.plot_data_2(C_expected_pc, C_frames, "C_expected", "C_measured", number_points=False)
 plt.show()
 
+# Problem 5
 emprobe = CalibrationTools("emprobe")
 G_all = parser.parse_empivot("prhw1\data\pa1-debug-f-empivot.txt")
 # calculate tool frame
@@ -74,6 +72,7 @@ ax.legend()
 ax.set_title("Tool frame markers and tip")
 plt.show()
 
+# Problem 6
 optprobe = CalibrationTools("optprobe")
 _, H_all = parser.parse_optpivot("prhw1\data\pa1-debug-f-optpivot.txt")
 

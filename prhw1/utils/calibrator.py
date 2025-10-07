@@ -14,7 +14,7 @@ class CalibrationTools:
     b = np.asarray(b, dtype=float)
     assert a.shape == b.shape and a.ndim == 2 and a.shape[1] == 3
     n = a.shape[0]
-    assert n >= 10
+    assert n >= 3
 
     # Find centroids and center two point clouds
     ca = a.mean(axis=0)
