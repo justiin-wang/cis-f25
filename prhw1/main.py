@@ -3,12 +3,11 @@ import matplotlib.pyplot as plt
 from utils.calibrator import CalibrationTools
 from utils import parse as parser
 from utils import plot as plotter
-
+from utils import write_out as writer
 # Main script for PA1. Run from start to finish to produce output.txt
 
-tool = CalibrationTools("test")
-
 #----------Problem 4----------
+tool = CalibrationTools("pcr")
 d, a, c = parser.parse_calbody("prhw1/data/pa1-debug-c-calbody.txt")
 D_frames, A_frames, C_frames = parser.parse_calreadings("prhw1/data/pa1-debug-c-calreadings.txt")
 C_expected_frames = [] # k C_expected point cloud
@@ -28,19 +27,7 @@ for k in range(len(D_frames)):
 C_expected_frames = np.array(C_expected_frames)
 C_frames = np.array(C_frames)
 
-print(f"C_expected_frames shape: {C_expected_frames.shape}")
-print(f"C_frames shape: {C_frames.shape}")
-
-C_expected_flat = C_expected_frames.reshape(-1, 3)
-C_frames_flat = C_frames.reshape(-1, 3)
-
-print(f"After flattening - C_expected: {C_expected_flat.shape}, C_frames: {C_frames_flat.shape}")
-
-# Plot C_expected vs C_frames
-fig, ax = plotter.plot_data_2(C_expected_flat, C_frames_flat, "C_expected", "C_measured", number_points=False)
-plt.show()
-
-# Problem 5
+#----------Problem 5----------
 emprobe = CalibrationTools("emprobe")
 G_all = parser.parse_empivot("prhw1\data\pa1-debug-f-empivot.txt")
 # calculate tool frame
@@ -50,48 +37,17 @@ emprobe.local_frame_points = G_all[0] - tool_origin
 T_all = np.zeros((len(G_all),4,4))
 emprobe_expected_all = []
 for k,frame in enumerate(G_all):
-  F_G = emprobe.point_cloud_registration(emprobe.local_frame_points,frame)
-  T_all[k] = F_G
+    F_G = emprobe.point_cloud_registration(emprobe.local_frame_points,frame)
+    T_all[k] = F_G
 
-  emprobe_expected = (F_G[:3, :3] @ emprobe.local_frame_points.T + F_G[:3, 3:4]).T
-  emprobe_expected_all.append(emprobe_expected)
+    emprobe_expected = (F_G[:3, :3] @ emprobe.local_frame_points.T + F_G[:3, 3:4]).T
+    emprobe_expected_all.append(emprobe_expected)
+
 # Perform pivot calibration
 p_tip_em,p_pivot_em = emprobe.pivot_calibration(T_all)
 
 emprobe_expected_all = np.array(emprobe_expected_all)
 G_all = np.array(G_all)
-
-# Flatten for plotting: (frames, points, 3) -> (frames*points, 3)
-emprobe_expected_flat = emprobe_expected_all.reshape(-1, 3)
-G_all_flat = G_all.reshape(-1, 3)
-
-# Plot EM probe point clouds
-fig, ax = plotter.plot_data_2(emprobe_expected_flat, G_all_flat, "EM Expected Trackers", "EM Measured Trackers", number_points=False)
-ax.scatter(p_pivot_em[0], p_pivot_em[1], p_pivot_em[2], c='r', marker='*', s=100, label='EM Pivot Point')
-ax.legend()
-plt.show()
-
-# Plot EM error vectors
-print("\n=== EM PROBE ERROR ANALYSIS ===")
-fig, ax = plotter.plot_data_error_vectors(emprobe_expected_flat, G_all_flat, "EM Expected", "EM Measured")
-plt.show()
-
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-# Plot tool markers
-ax.scatter(emprobe.local_frame_points[:,0], emprobe.local_frame_points[:,1], emprobe.local_frame_points[:,2], c='b', marker='o', s=50, label='Tool markers')
-
-# Plot tip
-ax.scatter(p_tip_em[0], p_tip_em[1], p_tip_em[2], c='r', marker='*', s=150, label='Tool tip')
-
-# Labels and legend
-ax.set_xlabel("X")
-ax.set_ylabel("Y")
-ax.set_zlabel("Z")
-ax.legend()
-ax.set_title("Tool frame markers and tip")
-plt.show()
 
 # --------------Problem 6---------------
 optprobe = CalibrationTools("optprobe")
@@ -124,36 +80,6 @@ p_tip_opt,p_pivot_opt = optprobe.pivot_calibration(T_all)
 optprobe_expected_all = np.array(optprobe_expected_all)
 H_all_em = np.array(H_all_em)
 
-# Flatten for plotting: (frames, points, 3) -> (frames*points, 3)
-optprobe_expected_flat = optprobe_expected_all.reshape(-1, 3)
-H_all_em_flat = H_all_em.reshape(-1, 3)
-
-# Plot optical probe point clouds  
-fig, ax = plotter.plot_data_2(optprobe_expected_flat, H_all_em_flat, "Optical Expected Trackers", "Optical Measured Trackers", number_points=False)
-ax.scatter(p_pivot_opt[0], p_pivot_opt[1], p_pivot_opt[2], c='r', marker='*', s=100, label='Optical Pivot Point')
-ax.legend()
-plt.show()
-
-# Plot optical error vectors
-print("\n=== OPTICAL PROBE ERROR ANALYSIS ===")
-fig, ax = plotter.plot_data_error_vectors(optprobe_expected_flat, H_all_em_flat, "Optical Expected", "Optical Measured")
-plt.show()
-
-fig = plt.figure()
-ax = fig.add_subplot(111, projection='3d')
-
-# Plot tool markers
-ax.scatter(optprobe.local_frame_points[:,0], optprobe.local_frame_points[:,1], optprobe.local_frame_points[:,2], c='b', marker='o', s=50, label='Tool markers')
-
-# Plot tip
-ax.scatter(p_tip_opt[0], p_tip_opt[1], p_tip_opt[2], c='r', marker='*', s=150, label='Tool tip')
-
-# Labels and legend
-ax.set_xlabel("X")
-ax.set_ylabel("Y")
-ax.set_zlabel("Z")
-ax.legend()
-ax.set_title("Tool frame markers and tip")
-plt.show()
-# TODO: write out to txt file
+# Write out to output
+writer.write_output_pa1(C_expected_frames, p_pivot_em, p_pivot_opt)
 

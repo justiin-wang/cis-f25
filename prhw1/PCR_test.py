@@ -74,7 +74,7 @@ if __name__ == "__main__":
     print(f"Angle Error (deg): {angle_error}")
     print(f"Translation Error: {translation_error}")
 
-    # Run expected calibration object test
+    # Run expected calibration object test for perfect data set
     perfect_expected, perfect_measured = find_expected_calibration_object("./data/pa1-debug-a-calbody.txt", "./data/pa1-debug-a-calreadings.txt")
     print(f"Perfect data shapes: expected {perfect_expected.shape}, measured {perfect_measured.shape}")
 
@@ -83,23 +83,25 @@ if __name__ == "__main__":
     perfect_measured_flat = perfect_measured.reshape(-1, 3)
 
     fig, ax = plotter.plot_data_2(perfect_expected_flat, perfect_measured_flat, "Perfect Expected", "Perfect Measured", number_points=False)
-    perfect_rmse = calcerr.calculate_rms_error(perfect_expected_flat, perfect_measured_flat)
-    print(f"Perfect RMSE: {perfect_rmse}")
     fig, ax = plotter.plot_data_error_vectors(perfect_expected_flat, perfect_measured_flat, "Perfect Expected", "Perfect Measured")
     print("Perfect data error stats:")
     print(calcerr.calculate_error_stats(perfect_expected_flat, perfect_measured_flat))
+    perfect_rmse = calcerr.calculate_rms_error(perfect_expected_flat, perfect_measured_flat)
+    print(f"Perfect RMSE: {perfect_rmse}")
 
+    # Run expected calibration object test for distorted data set
     distorted_expected, distorted_measured = find_expected_calibration_object("./data/pa1-debug-c-calbody.txt", "./data/pa1-debug-c-calreadings.txt")
 
-    # Flatten for plotting (
+    # Flatten for plotting 
     distorted_expected_flat = distorted_expected.reshape(-1, 3)
     distorted_measured_flat = distorted_measured.reshape(-1, 3)
 
     fig, ax = plotter.plot_data_2(distorted_expected_flat, distorted_measured_flat, "Distorted Expected", "Distorted Measured", number_points=False)
-    distorted_rmse = calcerr.calculate_rms_error(distorted_expected_flat, distorted_measured_flat)
-    print(f"Distorted RMSE: {distorted_rmse}")
     fig, ax = plotter.plot_data_error_vectors(distorted_expected_flat, distorted_measured_flat, "Distorted Expected", "Distorted Measured")   
     print("Distorted data error stats:")
     print(calcerr.calculate_error_stats(distorted_expected_flat, distorted_measured_flat))
+    distorted_rmse = calcerr.calculate_rms_error(distorted_expected_flat, distorted_measured_flat)
+    print(f"Distorted RMSE: {distorted_rmse}")
+   
     plt.show()
 
