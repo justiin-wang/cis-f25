@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from utils.calibrator import CalibrationTools
+from utils import calculate_errors as calcerr
 from utils import parse as parser
 from utils import plot as plotter
 
@@ -28,11 +29,13 @@ def find_expected_calibration_object(calbody_path, calreadings_path):
 
     return C_expected_pc, C_frames
 
-perfect_expected, perfect_measured = find_expected_calibration_object("./data/pa1-debug-c-calbody.txt", "./data/pa1-debug-c-calreadings.txt")
+perfect_expected, perfect_measured = find_expected_calibration_object("./data/pa1-debug-a-calbody.txt", "./data/pa1-debug-a-calreadings.txt")
 fig, ax = plotter.plot_data_2(perfect_expected, perfect_measured, "Perfect Expected", "Perfect Measured", number_points=False)
-# Calculate errrors, should be close to zero
+perfect_rmse = calcerr.calculate_rms_error(perfect_expected, perfect_measured)
+print(f"Perfect RMSE: {perfect_rmse}")
 
-distorted_expected, distorted_measured = find_expected_calibration_object("./data/pa1-debug-a-calbody.txt", "./data/pa1-debug-a-calreadings.txt")
+distorted_expected, distorted_measured = find_expected_calibration_object("./data/pa1-debug-c-calbody.txt", "./data/pa1-debug-c-calreadings.txt")
 fig, ax = plotter.plot_data_2(distorted_expected, distorted_measured, "Distorted Expected", "Distorted Measured", number_points=False)
+distorted_rmse = calcerr.calculate_rms_error(distorted_expected, distorted_measured)
+print(f"Distorted RMSE: {distorted_rmse}")
 plt.show()
-# Calculate errors, should be larger due to distortion
