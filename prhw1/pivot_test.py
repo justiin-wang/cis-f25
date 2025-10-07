@@ -1,5 +1,6 @@
 import numpy as np
 from utils.calibrator import CalibrationTools
+from utils import calculate_errors as calcerr
 
 def test_pivot_calibration():
     # np.random.seed(0)
@@ -35,5 +36,9 @@ def test_pivot_calibration():
     assert np.allclose(p_pivot_est, p_pivot_true, atol=1e-6)
     print("Pivot test pass")
 
+    return np.linalg.norm(p_tip_est - p_tip_true), np.linalg.norm(p_pivot_est - p_pivot_true)
+
 if __name__ == "__main__":
-    test_pivot_calibration()
+    tip_translation_error, pivot_translation_error = test_pivot_calibration()
+    print(f"Tip translation error: {tip_translation_error}")
+    print(f"Pivot translation error: {pivot_translation_error}")

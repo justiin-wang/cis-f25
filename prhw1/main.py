@@ -10,8 +10,8 @@ print(tool.name)
 
 # do problem 4 here
 
-d, a, c = parser.parse_calbody("./data/pa1-debug-c-calbody.txt")
-D_frames, A_frames, C_frames = parser.parse_calreadings("./data/pa1-debug-c-calreadings.txt")
+d, a, c = parser.parse_calbody("prhw1/data/pa1-debug-c-calbody.txt")
+D_frames, A_frames, C_frames = parser.parse_calreadings("prhw1/data/pa1-debug-c-calreadings.txt")
 C_expected_frames = [] # k C_expected point cloud
 
 for k in range(len(D_frames)):
@@ -30,7 +30,7 @@ C_expected_frames = np.array(C_expected_frames)
 C_frames = np.array(C_frames)
 
 # Plot C_expected vs C_frames
-fig, ax = plotter.plot_data_2(C_expected_pc, C_frames, "C_expected", "C_measured", number_points=False)
+fig, ax = plotter.plot_data_2(C_expected_frames, C_frames, "C_expected", "C_measured", number_points=False)
 plt.show()
 
 # Problem 5

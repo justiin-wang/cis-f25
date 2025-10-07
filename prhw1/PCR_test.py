@@ -28,6 +28,10 @@ def random_pcr_test(num_points=100, seed=42, angle_deg=30.0, translation=(20.0, 
     calib = CalibrationTools(name="PCR_test")
     estimated_HTM = calib.point_cloud_registration(original_points, transformed_points)
 
+    # Check results
+    assert np.allclose(estimated_HTM, known_HTM, atol=1e-6)
+    print("PCR test pass")
+
     return calcerr.calculate_error_transformation(known_HTM, estimated_HTM)
 
 

@@ -17,8 +17,8 @@ class CalibrationTools:
     assert n >= 3
 
     # Find centroids and center two point clouds
-    ca = a.mean()
-    cb = b.mean()
+    ca = a.mean(axis=0) # n, row by row mean
+    cb = b.mean(axis=0)
     A = a - ca
     B = b - cb
 
