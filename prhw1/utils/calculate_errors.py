@@ -19,3 +19,15 @@ def calculate_error_transformation(Fa, Fb):
     translation_error = np.linalg.norm(p_diff)
 
     return F_diff, angle_error, translation_error
+
+def calculate_error_stats(pc1, pc2):
+    assert pc1.shape == pc2.shape and pc1.ndim == 2 and pc1.shape[1] == 3
+
+    diff = pc1 - pc2
+    error_magnitudes = np.linalg.norm(diff)
+
+    mean_error = np.mean(error_magnitudes)
+    max_error = np.max(error_magnitudes)
+    min_error = np.min(error_magnitudes)
+
+    return mean_error, max_error, min_error

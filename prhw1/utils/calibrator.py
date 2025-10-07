@@ -4,33 +4,34 @@ class CalibrationTools:
   def __init__(self, name="Tool"):
     self.name=name
 
-  # Implementation of the point cloud registration algorithm 
+  # Implementation of Kabsch point cloud registration algorithm 
   # Assumes rigid, no scale, and point correspondence
   def point_cloud_registration(self, a, b):
    
     # Verify input dims and mininum points
-    a = np.asarray(a, dtype=float)
-    b = np.asarray(b, dtype=float)
+    a = np.asarray(a)
+    b = np.asarray(b)
     assert a.shape == b.shape and a.ndim == 2 and a.shape[1] == 3
     n = a.shape[0]
-    assert n >= 10
+    assert n >= 3
 
     # Find centroids and center two point clouds
-    ca = a.mean(axis=0)
-    cb = b.mean(axis=0)
+    ca = a.mean()
+    cb = b.mean()
     A = a - ca
     B = b - cb
 
     # Cross-covariance matrix
     H = A.T @ B / n 
 
-    # SVD to solve for 
+    # SVD to solve for rotation
     U, S, Vt = np.linalg.svd(H)
     V = Vt.T
 
-    # Comput rotation
+    # Comput rotation indep
     D = np.eye(3)
-    if np.linalg.det(V @ U.T) < 0:
+    # Caveat of Kabsch PCR: ensure rotation belongs to SO(3)
+    if np.linalg.det(V @ U.T) < 0: 
         D[2, 2] = -1.0
     R = V @ D @ U.T
 
@@ -38,28 +39,14 @@ class CalibrationTools:
     p = cb - (R @ ca)
 
     # Reconstruct HTM
-    E = np.eye(4)
-    E[:3, :3] = R  
-    E[:3, 3] = p
+    F = np.eye(4)
+    F[:3, :3] = R  
+    F[:3, 3] = p
 
-    return E
+    return F
 
   def pivot_calibration(self, T_all):
-    """
-    Perform pivot calibration
 
-    Parameters:
-      R_all: list of 3x3 numpy arrays.
-        Measured rotation matrices of tool in world.
-      p_all: list of 3x1 numpy arrays.
-        Measured translation vectors of tool in world.
-
-    Returns:
-      p_tip: 3x1 numpy array.
-        Calculated translation vector of tip in tool.
-      p_pivot: 3x1 numpy array.
-        Calculated translation vector of pivot point in world
-    """
     j = len(T_all)
     A = np.zeros((3 * j, 6))
     b = np.zeros(3 * j)
