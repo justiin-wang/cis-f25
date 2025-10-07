@@ -1,8 +1,9 @@
 import numpy as np
 
 class CalibrationTools:
-  def __init__(self, name="Tool"):
+  def __init__(self, name="Tool", local_frame_points = None):
     self.name=name
+    self.local_frame_points = local_frame_points
 
   # Implementation of the point cloud registration algorithm 
   # Assumes rigid, no scale, and point correspondence
