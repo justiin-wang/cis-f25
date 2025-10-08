@@ -88,10 +88,9 @@ if __name__ == "__main__":
 
     fig, ax = plotter.plot_data_2(perfect_expected_flat, perfect_measured_flat, "Perfect Expected", "Perfect Measured", number_points=False)
     fig, ax = plotter.plot_data_error_vectors(perfect_expected_flat, perfect_measured_flat, "Perfect Expected", "Perfect Measured")
-    print("Perfect data error stats:")
-    print(calcerr.calculate_error_stats(perfect_expected_flat, perfect_measured_flat))
-    perfect_rmse = calcerr.calculate_rms_error(perfect_expected_flat, perfect_measured_flat)
-    print(f"Perfect RMSE: {perfect_rmse}")
+    
+    perfect_stats = calcerr.calculate_error_stats(perfect_expected_flat, perfect_measured_flat)
+    calcerr.print_error_stats(perfect_stats)
 
     # Run expected calibration object test for distorted data set
     distorted_expected, distorted_measured = find_expected_calibration_object("./data/pa1-debug-c-calbody.txt", "./data/pa1-debug-c-calreadings.txt")
@@ -102,10 +101,9 @@ if __name__ == "__main__":
 
     fig, ax = plotter.plot_data_2(distorted_expected_flat, distorted_measured_flat, "Distorted Expected", "Distorted Measured", number_points=False)
     fig, ax = plotter.plot_data_error_vectors(distorted_expected_flat, distorted_measured_flat, "Distorted Expected", "Distorted Measured")   
-    print("Distorted data error stats:")
-    print(calcerr.calculate_error_stats(distorted_expected_flat, distorted_measured_flat))
-    distorted_rmse = calcerr.calculate_rms_error(distorted_expected_flat, distorted_measured_flat)
-    print(f"Distorted RMSE: {distorted_rmse}")
+    
+    distorted_stats = calcerr.calculate_error_stats(distorted_expected_flat, distorted_measured_flat)
+    calcerr.print_error_stats(distorted_stats)
    
     plt.show()
 

@@ -12,7 +12,6 @@ from utils import parse as parser
 tool = CalibrationTools("test")
 
 def test_pivot_calibration():
-    # np.random.seed(0)
     # Pick a coordinate for tip in tool
     p_tip_true = np.array([0.1, 0.2, 0.3])
     # Pick a coordinate for pivot in world
@@ -76,11 +75,9 @@ def em_pivot_calibration_test():
     fig, ax = plotter.plot_data_2(emprobe_expected_flat, G_all_flat, "EM Expected Trackers", "EM Measured Trackers", number_points=False)
     ax.scatter(p_pivot_em[0], p_pivot_em[1], p_pivot_em[2], c='r', marker='*', s=100, label='EM Pivot Point')
     ax.legend()
-    plt.show()
 
     # Plot EM error vectors
     fig, ax = plotter.plot_data_error_vectors(emprobe_expected_flat, G_all_flat, "EM Expected", "EM Measured")
-    plt.show()
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -97,7 +94,13 @@ def em_pivot_calibration_test():
     ax.set_zlabel("Z")
     ax.legend()
     ax.set_title("Tool frame markers and tip")
-    plt.show()
+
+    # Error stats between EM expected and G_all
+    em_rmse = calcerr.calculate_rms_error(emprobe_expected_flat, G_all_flat)
+    print(f"EM RMSE: {em_rmse}")
+    em_stats = calcerr.calculate_error_stats(emprobe_expected_flat, G_all_flat)
+    calcerr.print_error_stats(em_stats)
+
 
 def opt_pivot_calibration_test():
     optprobe = CalibrationTools("optprobe")
@@ -138,11 +141,9 @@ def opt_pivot_calibration_test():
     fig, ax = plotter.plot_data_2(optprobe_expected_flat, H_all_em_flat, "Optical Expected Trackers", "Optical Measured Trackers", number_points=False)
     ax.scatter(p_pivot_opt[0], p_pivot_opt[1], p_pivot_opt[2], c='r', marker='*', s=100, label='Optical Pivot Point')
     ax.legend()
-    plt.show()
 
     # Plot optical error vectors
     fig, ax = plotter.plot_data_error_vectors(optprobe_expected_flat, H_all_em_flat, "Optical Expected", "Optical Measured")
-    plt.show()
 
     fig = plt.figure()
     ax = fig.add_subplot(111, projection='3d')
@@ -159,8 +160,13 @@ def opt_pivot_calibration_test():
     ax.set_zlabel("Z")
     ax.legend()
     ax.set_title("Tool frame markers and tip")
-    plt.show()
-    # TODO: write out to txt file
+
+    # Error stats between optical expected and H_all_em
+    opt_rmse = calcerr.calculate_rms_error(optprobe_expected_flat, H_all_em_flat)
+    print(f"Optical RMSE: {opt_rmse}")
+    print("Optical data error stats:")
+    opt_stats = calcerr.calculate_error_stats(optprobe_expected_flat, H_all_em_flat)
+    calcerr.print_error_stats(opt_stats)
 
 
 
@@ -176,3 +182,6 @@ if __name__ == "__main__":
 
     # Run Optical pivot calibration test
     opt_pivot_calibration_test()
+
+    # Plot
+    plt.show()
