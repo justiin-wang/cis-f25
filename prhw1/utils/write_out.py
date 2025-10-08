@@ -11,7 +11,7 @@ def write_output_pa1(C_expected_frames, p_post_em, p_post_opt):
     Nf, Nc, _ = C_expected_frames.shape
 
     # Output path
-    out_dir = Path("prhw1/out")
+    out_dir = Path("./out")
     out_dir.mkdir(parents=True, exist_ok=True)
     output_path = out_dir / "pa1-output-1.txt"
 
