@@ -1,6 +1,6 @@
 import numpy as np
 
-class CalibrationTools:
+class ProbeCalibration:
   def __init__(self, name="Tool", local_frame_points = None):
     self.name=name
     self.local_frame_points = local_frame_points

@@ -4,12 +4,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.calibrator import CalibrationTools
+from utils.calibrator import ProbeCalibration
 from utils import calculate_errors as calcerr
 from utils import parse as parser
 from utils import plot as plotter
 
-tool = CalibrationTools("test")
+tool = ProbeCalibration("test")
 
 def find_expected_calibration_object(calbody_path, calreadings_path):
     d_known, a_known, c_known = parser.parse_calbody(calbody_path)
@@ -60,7 +60,7 @@ def random_pcr_test():
     transformed_points = (pts_h @ known_HTM.T)[:, :3]
 
     # Estimate HTM mapping original -> transformed using the calibrator object
-    calib = CalibrationTools(name="PCR_test")
+    calib = ProbeCalibration(name="PCR_test")
     estimated_HTM = calib.point_cloud_registration(original_points, transformed_points)
     print(f"Estimated HTM: \n{estimated_HTM}")
 

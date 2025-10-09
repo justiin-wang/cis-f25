@@ -4,12 +4,12 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.calibrator import CalibrationTools
+from utils.calibrator import ProbeCalibration
 from utils import calculate_errors as calcerr
 from utils import plot as plotter
 from utils import parse as parser
 
-tool = CalibrationTools("test")
+tool = ProbeCalibration("test")
 
 def test_pivot_calibration():
     # Pick a coordinate for tip in tool
@@ -36,7 +36,7 @@ def test_pivot_calibration():
         T[:3,3] = p
         T_all.append(T)
 
-    tool = CalibrationTools("pivot test")
+    tool = ProbeCalibration("pivot test")
     p_tip_est, p_pivot_est = tool.pivot_calibration(T_all)
 
     # Check results
@@ -47,7 +47,7 @@ def test_pivot_calibration():
     return np.linalg.norm(p_tip_est - p_tip_true), np.linalg.norm(p_pivot_est - p_pivot_true)
 
 def em_pivot_calibration_test():
-    emprobe = CalibrationTools("emprobe")
+    emprobe = ProbeCalibration("emprobe")
     G_all = parser.parse_empivot(".\data\pa1-debug-f-empivot.txt")
     # calculate tool frame
     tool_origin = G_all[0].mean(axis=0)
@@ -103,7 +103,7 @@ def em_pivot_calibration_test():
 
 
 def opt_pivot_calibration_test():
-    optprobe = CalibrationTools("optprobe")
+    optprobe = ProbeCalibration("optprobe")
     D_all, H_all = parser.parse_optpivot(".\data\pa1-debug-f-optpivot.txt")
     d, _, _ = parser.parse_calbody("./data/pa1-debug-f-calbody.txt")
 
@@ -116,7 +116,7 @@ def opt_pivot_calibration_test():
     T_all = np.zeros((len(H_all_em),4,4))
     optprobe_expected_all = []
     for k,frame in enumerate(H_all):
-        F_D = optprobe.point_cloud_registration(d, D_all[k])
+        F_D = optprobe.point_cloud_registration(D_all[k], d)
         R_D = F_D[:3,:3]
         t_D = F_D[:3,3:4]
         H_em = (R_D @ frame.T + t_D).T

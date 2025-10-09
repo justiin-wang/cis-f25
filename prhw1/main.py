@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils.calibrator import CalibrationTools
+from utils.calibrator import ProbeCalibration
 from utils import parse as parser
 from utils import plot as plotter
 from utils import write_out as writer
@@ -8,7 +8,7 @@ from utils import write_out as writer
 # Main script for PA1. Run from start to finish to produce output.txt
 
 #----------Problem 4----------
-tool = CalibrationTools("pcr")
+tool = ProbeCalibration("pcr")
 d, a, c = parser.parse_calbody("./data/pa1-debug-c-calbody.txt")
 D_frames, A_frames, C_frames = parser.parse_calreadings("./data/pa1-debug-c-calreadings.txt")
 C_expected_frames = [] # k C_expected point cloud
@@ -29,8 +29,8 @@ C_expected_frames = np.array(C_expected_frames)
 C_frames = np.array(C_frames)
 
 #----------Problem 5----------
-emprobe = CalibrationTools("emprobe")
-G_all = parser.parse_empivot(".\data\pa1-debug-f-empivot.txt")
+emprobe = ProbeCalibration("emprobe")
+G_all = parser.parse_empivot(".\data\pa1-debug-c-empivot.txt")
 # calculate tool frame
 tool_origin = G_all[0].mean(axis=0)
 emprobe.local_frame_points = G_all[0] - tool_origin
@@ -51,9 +51,9 @@ emprobe_expected_all = np.array(emprobe_expected_all)
 G_all = np.array(G_all)
 
 # --------------Problem 6---------------
-optprobe = CalibrationTools("optprobe")
-D_all, H_all = parser.parse_optpivot(".\data\pa1-debug-f-optpivot.txt")
-d, _, _ = parser.parse_calbody("./data/pa1-debug-f-calbody.txt")
+optprobe = ProbeCalibration("optprobe")
+D_all, H_all = parser.parse_optpivot(".\data\pa1-debug-c-optpivot.txt")
+d, _, _ = parser.parse_calbody("./data/pa1-debug-c-calbody.txt")
 
 H_all_em = np.zeros(np.shape(H_all))
 
@@ -65,8 +65,8 @@ T_all = np.zeros((len(H_all_em),4,4))
 optprobe_expected_all = []
 for k,frame in enumerate(H_all):
   F_D = optprobe.point_cloud_registration(d, D_all[k])
-  R_D = F_D[:3,:3]
-  t_D = F_D[:3,3:4]
+  R_D = np.linalg.inv(F_D)[:3,:3]
+  t_D = np.linalg.inv(F_D)[:3,3:4]
   H_em = (R_D @ frame.T + t_D).T
   H_all_em[k] = H_em
 
