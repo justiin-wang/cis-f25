@@ -1,7 +1,7 @@
+import os
 import numpy as np
-from pathlib import Path
 
-def write_output_pa1(C_expected_frames, p_post_em, p_post_opt):
+def write_output_pa1(C_expected_frames, p_post_em, p_post_opt, output_path):
     # Flatten frames
     C_expected_frames = np.asarray(C_expected_frames)
     p_post_em = np.asarray(p_post_em).flatten()
@@ -9,16 +9,16 @@ def write_output_pa1(C_expected_frames, p_post_em, p_post_opt):
 
     # Retrieve header
     Nf, Nc, _ = C_expected_frames.shape
-
-    # Output path
-    out_dir = Path("./out")
-    out_dir.mkdir(parents=True, exist_ok=True)
-    output_path = out_dir / "pa1-output-1.txt"
-
+    
+    # Ensure out directory exists
+    parent_dir = os.path.dirname(output_path)
+    if parent_dir:
+        os.makedirs(parent_dir, exist_ok=True)
+         
     # Write out
     with open(output_path, "w") as f:
-        # Header 
-        f.write(f"{Nc}, {Nf}, pa1-output-1.txt\n")
+        # Header
+        f.write(f"{Nc}, {Nf}, {os.path.basename(output_path)}\n")
 
         # 2-3 Pivot Cals
         f.write(f"{p_post_em[0]:.2f}, {p_post_em[1]:.2f}, {p_post_em[2]:.2f}\n")
