@@ -11,7 +11,7 @@ datasets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k']
 for letter in datasets:
     prefix = 'debug' if letter <= 'g' else 'unknown'
 
-    # Build file paths
+    # File paths
     calbody_path = f"./data/pa1-{prefix}-{letter}-calbody.txt"
     calreadings_path = f"./data/pa1-{prefix}-{letter}-calreadings.txt"
     empivot_path = f"./data/pa1-{prefix}-{letter}-empivot.txt"
