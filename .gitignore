@@ -7,3 +7,10 @@ __pycache__/
 # Ignore virtual environment
 .venv/
 *.pyc
+prhw1/out/pa1-debug-a-output-1.txt
+prhw1/out/pa1-debug-b-output-1.txt
+prhw1/out/pa1-debug-c-output-1.txt
+prhw1/out/pa1-debug-d-output-1.txt
+prhw1/out/pa1-debug-e-output-1.txt
+prhw1/out/pa1-debug-f-output-1.txt
+prhw1/out/pa1-debug-g-output-1.txt
