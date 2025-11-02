@@ -104,3 +104,17 @@ if __name__ == "__main__":
     print("H_frames shape:", H_frames.shape)
 
 
+def parse_output_1(path):
+    with open(path, 'r') as f:
+        header = f.readline().strip()
+        parts = header.replace(',', ' ').split()
+        Nc, Nframes = map(int, parts[:2])
+
+        p_post_em = np.fromstring(f.readline(), sep=',')
+        p_post_opt = np.fromstring(f.readline(), sep=',')
+
+        data = np.loadtxt(path, delimiter=',', skiprows=3)
+        C_expected_frames = data.reshape(Nframes, Nc, 3)
+
+    return C_expected_frames, p_post_em, p_post_opt
+

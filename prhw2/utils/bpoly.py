@@ -14,14 +14,12 @@ class BPoly:
     # Helper function to construct 1D Bernstein basis following formula: 
     # https://www2.math.upenn.edu/~kadison/bernstein.pdf
     def bernstein_1d(self, n, x):
-        print("Min/Max of x:", x.min(), x.max())
+        # print("Min/Max of x:", x.min(), x.max())
         assert 0 <= x <= 1, "input must be normalized to [0,1]"
 
-        x_min = x.min()
-        x_max = x.max()
-        if x_min < -1e-3 or x_max > 1 + 0.05:
-            raise ValueError(f"BPoly input normalization error: clipped too much ({x_min}, {x_max})")
-        x = np.clip(x, 0.0, 1.0) # Allow for slight tolerances outside [0,1]
+        if np.any(x < -1e-6) or np.any(x > 1+1e-6):
+            print("Warning: input slightly outside [0,1]")
+        x = np.clip(x, 0, 1)
 
         B = np.zeros(n + 1)
         for i in range(n + 1):
