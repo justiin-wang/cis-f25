@@ -1,5 +1,7 @@
 import numpy as np
 
+# TODO: Add comments
+
 def calculate_rms_error(pc1, pc2):
     assert pc1.shape == pc2.shape 
     diff = pc1 - pc2

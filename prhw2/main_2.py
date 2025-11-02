@@ -1,11 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from utils.calibrator import ProbeCalibration
+from utils.bpoly import BPoly
 from utils import parse as parser
 from utils import plot as plotter
 from utils import write_out as writer
 
-# Main script for PA. Run from start to finish to produce all output.txt's
+# Main script for PA2. Run from start to finish to produce all output.txt's
 # datasets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'] 
 datasets = ['a']
 
@@ -19,6 +20,8 @@ for letter in datasets:
     optpivot_path = f"./data/pa2-{prefix}-{letter}-optpivot.txt"
 
     output_path = f"./out/pa2-{prefix}-{letter}-output-1.txt"
+
+    # TODO: Add paths for EM/CT fiducials, EM Nav
 
     #----------Step 1----------
     # Find C expected frames from D and A readings
@@ -46,23 +49,47 @@ for letter in datasets:
     # Flatten into paired points
     C_measured_flat = C_frames.reshape(-1, 3)
     C_expected_flat = C_expected_frames.reshape(-1, 3)
-    errors = C_expected_flat - C_measured_flat # Error function
 
     #----------Step 2----------
     # Fit error function to polynomial
+    bpoly = BPoly(order=3)
+    bpoly.fit(C_measured_flat, C_expected_flat)
+
+    #----------Step 3----------
+    # Interpolate and apply corrections
+    C_predicted_flat = bpoly.apply(C_measured_flat)
+    C_predicted_frames = C_predicted_flat.reshape(C_frames.shape)
+
+    #----------Step 4----------
+    # Repeat pivot calibration with corrected points
+    emprobe = ProbeCalibration("emprobe")
+    G_all = parser.parse_empivot(empivot_path)
+
+    # Apply distortion correction to G_all
+    G_all_corrected = np.zeros_like(G_all)
+    for k in range(len(G_all)):
+        G_all_corrected[k] = bpoly.apply(G_all[k])
+
+    # calculate tool frame
+    tool_origin = G_all_corrected[0].mean(axis=0)
+    emprobe.local_frame_points = G_all_corrected[0] - tool_origin
+
+    # Calculate PCR for each reading
+    T_all = np.zeros((len(G_all_corrected),4,4))
+    for k, frame in enumerate(G_all_corrected):
+        T_all[k] = emprobe.point_cloud_registration(emprobe.local_frame_points, frame)
+
+    p_tip_em, p_pivot_em = emprobe.pivot_calibration(T_all)
+
+    #----------Step 5----------
+    # TODO: Correct fiducial points 
+
+    #----------Step 6----------
+    # TODO: CT Registration
+
+    #----------Step 7----------
+    # TODO: Navigation
+
+    # TODO: Write out to output
+
     
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # Write out to output
-    #writer.write_output_pa1(C_expected_frames, p_pivot_em, p_pivot_opt, output_path)

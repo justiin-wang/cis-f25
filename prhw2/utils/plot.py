@@ -4,6 +4,8 @@ from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.cm as cm
 from matplotlib import colors
 
+# TODO: Make easier code (see gradescope feedback)
+
 def plot_data_1(data, var_name, number_points=False):
     fig = plt.figure(figsize=(10, 8))
     ax = fig.add_subplot(111, projection='3d')

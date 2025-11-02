@@ -1,6 +1,9 @@
 import numpy as np
 import pandas as pd
 
+# TODO: Add comments
+# TODO: Add parsing for ct/em fiducials, em nav
+
 def parse_calbody(path):
     with open(path, 'r') as f:
         header = f.readline().strip()

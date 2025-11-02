@@ -1,6 +1,8 @@
 import os
 import numpy as np
 
+# TODO: add output for pa2 format
+
 def write_output_pa1(C_expected_frames, p_post_em, p_post_opt, output_path):
     # Flatten frames
     C_expected_frames = np.asarray(C_expected_frames)

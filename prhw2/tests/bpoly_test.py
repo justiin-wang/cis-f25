@@ -28,6 +28,10 @@ def random_bpoly_test(order):
     stats = calcerr.calculate_error_stats(expected, predicted)
     return stats
 
+# TODO: load a data set and test fit and errors independently
+# def dataset_test(order):
+
+
 if __name__ == "__main__":
     # Play around with order to underfitting -> good fit
     for i in range (1, 10):
