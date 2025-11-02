@@ -13,7 +13,7 @@ class BPoly:
 
     # Helper function to construct 1D Bernstein basis following formula: 
     # https://www2.math.upenn.edu/~kadison/bernstein.pdf
-    def bernstein_1d(n, x):
+    def bernstein_1d(self, n, x):
         assert 0 <= x <= 1, "input must be normalized to [0,1]"
 
         B = np.zeros(n + 1)
@@ -22,11 +22,11 @@ class BPoly:
         return np.array(B)
 
     # Helper function to construct 3D Bernstein basis
-    def bernstein_3d_basis(n, xyz):
+    def bernstein_3d_basis(self, n, xyz):
         # Compute 1D basis for each dim
-        B_x = bernstein_1d(n, xyz[0])
-        B_y = bernstein_1d(n, xyz[1])
-        B_z = bernstein_1d(n, xyz[2]) 
+        B_x = self.bernstein_1d(n, xyz[0])
+        B_y = self.bernstein_1d(n, xyz[1])
+        B_z = self.bernstein_1d(n, xyz[2]) 
 
         # Combine into 3D basis
         B_xyz = []
@@ -53,7 +53,7 @@ class BPoly:
         # Build coeff matrix A
         A = np.zeros((num_points, (n + 1) ** 3))
         for i in range(num_points):
-            basis_vector = self.bernstein_3d_basis(n, num_points[i]) 
+            basis_vector = self.bernstein_3d_basis(n, norm_points[i]) 
             A[i, :] = basis_vector
 
         # Solve least squares independently for x, y, z
@@ -72,7 +72,7 @@ class BPoly:
         # Build coeff matrix A
         A = np.zeros((num_points, (n + 1) ** 3))
         for i in range(num_points):
-            basis_vector = self.bernstein_3d_basis(n, num_points[i]) 
+            basis_vector = self.bernstein_3d_basis(n, norm_points[i]) 
             A[i, :] = basis_vector
 
         x_corrected = A @ self.coeff_x
