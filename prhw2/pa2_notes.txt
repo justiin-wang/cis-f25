@@ -1,0 +1,7 @@
+Workflow:
+0. We have C_exp and C_measured
+1. Transform into same frame to computer C_exp
+2. Create an array of corresponding "errors". Note: EM distortion is primarily tranlsation, so 3 vectors. No rotation
+3. Model errors with polynomial fitting (bpoly?)
+4. Interpolate corrections 
+5. 
