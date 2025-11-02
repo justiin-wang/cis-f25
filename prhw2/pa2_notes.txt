@@ -5,3 +5,78 @@ Workflow:
 3. Interpolate and apply corrections 
 4. Do pivot calibration with corrections for distortion
 5. 
+
+
+BPoly Order 5:
+Dataset a:
+Pivot EM error: 0.684544
+Pivot OPT error: 0.000000
+Mean RMS C error: 0.004710
+Mean RMS Tip Position error: 0.752643
+
+Dataset b:
+Pivot EM error: 1.748857
+Pivot OPT error: 0.000000
+Mean RMS C error: 0.502218
+Mean RMS Tip Position error: 1.955724
+
+Dataset c:
+Pivot EM error: 5.352887
+Pivot OPT error: 0.014142
+Mean RMS C error: 0.522093
+Mean RMS Tip Position error: 4.294984
+
+Dataset d:
+Pivot EM error: 1.873553
+Pivot OPT error: 0.000000
+Mean RMS C error: 0.012221
+Mean RMS Tip Position error: 4.883466
+
+Dataset e:
+Pivot EM error: 13.868738
+Pivot OPT error: 0.000000
+Mean RMS C error: 1.577330
+Mean RMS Tip Position error: 8.700338
+
+Dataset f:
+Pivot EM error: 7.890634
+Pivot OPT error: 0.000000
+Mean RMS C error: 1.705271
+Mean RMS Tip Position error: 5.989003
+
+BPoly Order 3:
+Dataset a:
+Pivot EM error: 0.684544
+Pivot OPT error: 0.000000
+Mean RMS Registration error: 0.004710
+Mean RMS Tip Position error: 0.752643
+
+Dataset b:
+Pivot EM error: 1.941881
+Pivot OPT error: 0.000000
+Mean RMS Registration error: 0.502218
+Mean RMS Tip Position error: 1.862615
+
+Dataset c:
+Pivot EM error: 4.300488
+Pivot OPT error: 0.014142
+Mean RMS Registration error: 0.522093
+Mean RMS Tip Position error: 3.381178
+
+Dataset d:
+Pivot EM error: 1.873553
+Pivot OPT error: 0.000000
+Mean RMS Registration error: 0.012221
+Mean RMS Tip Position error: 4.879980
+
+Dataset e:
+Pivot EM error: 8.061848
+Pivot OPT error: 0.000000
+Mean RMS Registration error: 1.577330
+Mean RMS Tip Position error: 7.178907
+
+Dataset f:
+Pivot EM error: 4.632440
+Pivot OPT error: 0.000000
+Mean RMS Registration error: 1.705271
+Mean RMS Tip Position error: 5.058720

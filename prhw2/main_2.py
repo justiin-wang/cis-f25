@@ -7,8 +7,11 @@ from utils import plot as plotter
 from utils import write_out as writer
 
 # Main script for PA2. Run from start to finish to produce all output.txt's
-# datasets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'] 
-datasets = ['a']
+
+#datasets = ['a']
+datasets = ['a', 'b', 'c', 'd', 'e', 'f'] # Only debug datasets, use for diffing output test
+#datasets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'] # All datasets
+
 
 for letter in datasets:
     prefix = 'debug' if letter <= 'g' else 'unknown'
@@ -18,10 +21,14 @@ for letter in datasets:
     calreadings_path = f"./data/pa2-{prefix}-{letter}-calreadings.txt"
     empivot_path = f"./data/pa2-{prefix}-{letter}-empivot.txt"
     optpivot_path = f"./data/pa2-{prefix}-{letter}-optpivot.txt"
+    ctfid_path = f"./data/pa2-{prefix}-{letter}-ct-fiducials.txt"
+    emfid_path = f"./data/pa2-{prefix}-{letter}-em-fiducialss.txt"
+    emnav_path = f"./data/pa2-{prefix}-{letter}-EM-nav.txt"
 
-    output_path = f"./out/pa2-{prefix}-{letter}-output-1.txt"
+    output_path1 = f"./out/pa2-{prefix}-{letter}-output1.txt"
+    output_path2 = f"./out/pa2-{prefix}-{letter}-output2.txt"
 
-    # TODO: Add paths for EM/CT fiducials, EM Nav
+    # TODO: Add paths for EM/CT fiducials, EM Nav 
 
     #----------Step 1----------
     # Find C expected frames from D and A readings
@@ -41,26 +48,25 @@ for letter in datasets:
 
         C_expected = (F_C[:3, :3] @ c.T + F_C[:3, 3:4]).T # Apply the transformation to vector c
         C_expected_frames.append(C_expected)
+
     # We now have C_expected_frames and C_frames to create out error function
     C_expected_frames = np.array(C_expected_frames)
     C_frames = np.array(C_frames)
-    print(C_expected_frames.shape, C_frames.shape)
 
-    # Flatten into paired points
+    # Flatten into paired point clouds
     C_measured_flat = C_frames.reshape(-1, 3)
     C_expected_flat = C_expected_frames.reshape(-1, 3)
 
     #----------Step 2----------
     # Fit error function to polynomial
-    bpoly = BPoly(order=3)
+    bpoly = BPoly(order=1)
     bpoly.fit(C_measured_flat, C_expected_flat)
 
-    #----------Step 3----------
     # Interpolate and apply corrections
     C_predicted_flat = bpoly.apply(C_measured_flat)
     C_predicted_frames = C_predicted_flat.reshape(C_frames.shape)
 
-    #----------Step 4----------
+    #----------Step 3----------
     # Repeat pivot calibration with corrected points
     emprobe = ProbeCalibration("emprobe")
     G_all = parser.parse_empivot(empivot_path)
@@ -76,20 +82,83 @@ for letter in datasets:
 
     # Calculate PCR for each reading
     T_all = np.zeros((len(G_all_corrected),4,4))
+    em_probe_expected_all = []
     for k, frame in enumerate(G_all_corrected):
-        T_all[k] = emprobe.point_cloud_registration(emprobe.local_frame_points, frame)
+        F_G = emprobe.point_cloud_registration(emprobe.local_frame_points, frame)
+        T_all[k] = F_G
 
     p_tip_em, p_pivot_em = emprobe.pivot_calibration(T_all)
 
-    #----------Step 5----------
-    # TODO: Correct fiducial points 
+    #----------`Step 3b----------
+    # Do Optical pivot calibration for output 1
+    # (Not needed by rest of the code)
+    optprobe = ProbeCalibration("optprobe")
+    D_all, H_all = parser.parse_optpivot(optpivot_path)
+    d, _, _ = parser.parse_calbody(calbody_path)
 
-    #----------Step 6----------
-    # TODO: CT Registration
+    H_all_em = np.zeros(np.shape(H_all))
 
-    #----------Step 7----------
-    # TODO: Navigation
+    # calculate tool frame
+    tool_origin = H_all[0].mean(axis=0)
+    optprobe.local_frame_points = H_all[0] - tool_origin
+    # Calculate PCR for each reading
+    T_all = np.zeros((len(H_all_em),4,4))
+    optprobe_expected_all = []
+    for k,frame in enumerate(H_all):
+        F_D = optprobe.point_cloud_registration(d, D_all[k])
+        R_D = np.linalg.inv(F_D)[:3,:3]
+        t_D = np.linalg.inv(F_D)[:3,3:4]
+        H_em = (R_D @ frame.T + t_D).T
+        H_all_em[k] = H_em
 
-    # TODO: Write out to output
+        F_G = optprobe.point_cloud_registration(optprobe.local_frame_points,H_em)
+        T_all[k] = F_G
+
+        optprobe_expected = (F_G[:3, :3] @ optprobe.local_frame_points.T + F_G[:3, 3:4]).T
+        optprobe_expected_all.append(optprobe_expected)
+    # Perform pivot calibration
+    p_tip_opt,p_pivot_opt = optprobe.pivot_calibration(T_all)
+    
+
+     #---------- Step 4 ----------
+    # Correct fiducials 
+    b_ct = parser.parse_ctfiducials(ctfid_path)        
+    print("b_ct shape:", b_ct.shape) # Should be (Nb, 3)
+    G_fid_all = parser.parse_emfiducials(emfid_path)  
+    print("G_fid_all shape:", G_fid_all.shape) # Should be (Nb, Ng, 3)
+
+    G_fid_all_corrected = np.empty_like(G_fid_all)
+    for i in range(G_fid_all.shape[0]):
+        G_fid_all_corrected[i] = bpoly.apply(G_fid_all[i])
+
+    # Compute tip positions in EM base frame
+    tip_positions_em = np.zeros((b_ct.shape[0], 3))
+    for i in range(G_fid_all_corrected.shape[0]):
+        F_G = emprobe.point_cloud_registration(emprobe.local_frame_points, G_fid_all_corrected[i])
+        tip_positions_em[i] = F_G[:3, :3] @ p_tip_em + F_G[:3, 3]   # tip in EM base
+
+    #---------- Step 5 ----------
+    # Registration EM -> CT
+    registration = ProbeCalibration("registration")
+    F_reg = registration.point_cloud_registration(tip_positions_em, b_ct)  
+
+    #---------- Step 6 ----------
+    # Navigation frames -> CT coordinates
+    G_nav_all = parser.parse_emnav(emnav_path)  
+    print("G_nav_all shape:", G_nav_all.shape) # Should be (Nnav, Ng, 3)
+    G_nav_corrected = np.empty_like(G_nav_all)
+    for k in range(G_nav_all.shape[0]):
+        G_nav_corrected[k] = bpoly.apply(G_nav_all[k])
+
+    tip_positions_ct = np.zeros((G_nav_corrected.shape[0], 3))
+    for k in range(G_nav_corrected.shape[0]):
+        F_G = emprobe.point_cloud_registration(emprobe.local_frame_points, G_nav_corrected[k])
+        p_tip_em_frame = F_G[:3, :3] @ p_tip_em + F_G[:3, 3]
+        tip_positions_ct[k] = F_reg[:3, :3] @ p_tip_em_frame + F_reg[:3, 3]
+
+    # Write out
+    writer.write_output_pa1(C_expected_frames, p_pivot_em, p_pivot_opt, output_path1)
+    writer.write_output_pa2(tip_positions_ct, output_path2)
+    
 
     
