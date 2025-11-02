@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from utils.calibrator import ProbeCalibration
 from utils.bpoly import BPoly
 from utils import parse as parser
-from utils import plot as plotter
 from utils import write_out as writer
 from utils import calculate_errors as calcerr
 
@@ -12,8 +11,8 @@ CONVERGENCE_THRESHOLD = 0.001
 
 # Main script for PA2. Run from start to finish to produce all output.txt's
 
-#datasets = ['a']
-#datasets = ['a', 'b', 'c', 'd', 'e', 'f'] # Only debug datasets, use for diffing output test
+#datasets = ['a'] # Identify single dataset for debugging
+#datasets = ['a', 'b', 'c', 'd', 'e', 'f'] # Only debug datasets, use for compare_outputs.py test
 datasets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'] # All datasets
 
 
@@ -34,6 +33,7 @@ for letter in datasets:
     output_path2 = f"./out/pa2-{prefix}-{letter}-output2.txt"
 
     print(f"----------Processing dataset {letter}----------")
+
     #----------Step 1----------
     # Find C expected frames from D and A readings
     tool = ProbeCalibration("pcr")
@@ -79,6 +79,7 @@ for letter in datasets:
             test_error_rms = calcerr.calculate_rms_error(test_corrected, C_expected_flat)
             print(f"    Order {test_order}: RMS = {test_error_rms:.4f} mm")
 
+            # Keep best fit
             if test_error_rms < best_rms:
                 best_rms = test_error_rms
                 order = test_order
@@ -92,10 +93,11 @@ for letter in datasets:
             prev_rms = test_error_rms
         
         print(f"    Selected polynomial order {order} with RMS error {best_rms:.4f} mm")
-        # Interpolate and apply corrections
+        # Apply correction based on best fit
         C_predicted_flat = bpoly.apply(C_measured_flat)
         C_predicted_frames = C_predicted_flat.reshape(C_frames.shape)
     else:
+        print(f"No distortion fit needed for {letter} with RMS error {C_rms:.4f} mm")
         C_predicted_flat = C_measured_flat.copy() 
         C_predicted_frames = C_frames.copy() 
 

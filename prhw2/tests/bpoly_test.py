@@ -68,8 +68,8 @@ if __name__ == "__main__":
         print("BPoly Fit Error Stats:\n")
         calcerr.print_error_stats(error_stats)
         if (error_stats['rms'] >= 0.02):
-            print("FAIL")
+            print("FAIL\n")
         else:
-            print("PASS")
+            print("PASS\n")
         
 
