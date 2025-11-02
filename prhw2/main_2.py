@@ -7,18 +7,19 @@ from utils import plot as plotter
 from utils import write_out as writer
 from utils import calculate_errors as calcerr
 
-ERROR_DISTORTION_THRESHOLD = 2.0
+ERROR_DISTORTION_THRESHOLD = 2.0 
+CONVERGENCE_THRESHOLD = 0.001 
 
 # Main script for PA2. Run from start to finish to produce all output.txt's
 
 #datasets = ['a']
-datasets = ['a', 'b', 'c', 'd', 'e', 'f'] # Only debug datasets, use for diffing output test
-#datasets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'] # All datasets
+#datasets = ['a', 'b', 'c', 'd', 'e', 'f'] # Only debug datasets, use for diffing output test
+datasets = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'] # All datasets
 
 
 for letter in datasets:
     # Special case when we transition from debug to unknown sets
-    prefix = 'debug' if letter <= 'g' else 'unknown'
+    prefix = 'debug' if letter <= 'f' else 'unknown'
 
     # File paths
     calbody_path = f"./data/pa2-{prefix}-{letter}-calbody.txt"
@@ -32,8 +33,7 @@ for letter in datasets:
     output_path1 = f"./out/pa2-{prefix}-{letter}-output1.txt"
     output_path2 = f"./out/pa2-{prefix}-{letter}-output2.txt"
 
-    # TODO: Add paths for EM/CT fiducials, EM Nav 
-
+    print(f"----------Processing dataset {letter}----------")
     #----------Step 1----------
     # Find C expected frames from D and A readings
     tool = ProbeCalibration("pcr")
@@ -69,19 +69,27 @@ for letter in datasets:
         bpoly = None
         order = 0
         best_rms = np.inf
+        prev_rms = np.inf
 
         print(f"Fitting distortion for {letter} with RMS error {C_rms:.4f} mm")
-        for test_order in range(1, 10):
+        for test_order in range(1, 100):
             test = BPoly(order=test_order)
             test.fit(C_measured_flat, C_expected_flat)
             test_corrected = test.apply(C_measured_flat)
             test_error_rms = calcerr.calculate_rms_error(test_corrected, C_expected_flat)
-            print(f"    Test polynomial order {test_order}: RMS error {test_error_rms:.4f} mm")
+            print(f"    Order {test_order}: RMS = {test_error_rms:.4f} mm")
 
             if test_error_rms < best_rms:
                 best_rms = test_error_rms
                 order = test_order
                 bpoly = test
+            
+            # Check convergence
+            if test_order > 1 and prev_rms - test_error_rms < CONVERGENCE_THRESHOLD:
+                print(f"    Converged at order {test_order}")
+                break
+            
+            prev_rms = test_error_rms
         
         print(f"    Selected polynomial order {order} with RMS error {best_rms:.4f} mm")
         # Interpolate and apply corrections
@@ -151,9 +159,7 @@ for letter in datasets:
      #---------- Step 4 ----------
     # Correct fiducials 
     b_ct = parser.parse_ctfiducials(ctfid_path)        
-    print("b_ct shape:", b_ct.shape) # Should be (Nb, 3)
     G_fid_all = parser.parse_emfiducials(emfid_path)  
-    print("G_fid_all shape:", G_fid_all.shape) # Should be (Nb, Ng, 3)
 
     G_fid_all_corrected = np.empty_like(G_fid_all)
     for i in range(G_fid_all.shape[0]):
@@ -176,7 +182,6 @@ for letter in datasets:
     #---------- Step 6 ----------
     # Navigation frames -> CT coordinates
     G_nav_all = parser.parse_emnav(emnav_path)  
-    print("G_nav_all shape:", G_nav_all.shape) # Should be (Nnav, Ng, 3)
     G_nav_corrected = np.empty_like(G_nav_all)
     for k in range(G_nav_all.shape[0]):
         if (C_rms > ERROR_DISTORTION_THRESHOLD):

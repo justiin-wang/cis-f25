@@ -4,87 +4,74 @@ from math import comb
 class BPoly:
 
     def __init__(self, order):
-        self.order = order # Degree of polynomial, play around with order for best fit
-        self.coeff_x = None 
-        self.coeff_y = None
-        self.coeff_z = None
-        self.min = None # Define a normalization range
-        self.max = None
+        self.order = order
+        self.coeff = None
+        self.min_ = None
+        self.max_ = None
 
     # Helper function to construct 1D Bernstein basis following formula: 
     # https://www2.math.upenn.edu/~kadison/bernstein.pdf
-    def bernstein_1d(self, n, x):
-        # print("Min/Max of x:", x.min(), x.max())
-        assert 0 <= x <= 1, "input must be normalized to [0,1]"
+    def bernstein_1d(self, n, norm_points):
 
-        if np.any(x < -1e-6) or np.any(x > 1+1e-6):
-            print("Warning: input slightly outside [0,1]")
-        x = np.clip(x, 0, 1)
-
-        B = np.zeros(n + 1)
-        for i in range(n + 1):
-            B[i] = comb(n, i) * (x ** i) * ((1 - x) ** (n - i))
-        return np.array(B)
+        N = np.arange(n + 1)        
+        B = np.array([comb(n, i) * (norm_points ** i) * ((1 - norm_points) ** (n - i)) for i in N])
+        return B  # shape: [(n+1), len(x)]
 
     # Helper function to construct 3D Bernstein basis
-    def bernstein_3d_basis(self, n, xyz):
-        # Compute 1D basis for each dim
-        B_x = self.bernstein_1d(n, xyz[0])
-        B_y = self.bernstein_1d(n, xyz[1])
-        B_z = self.bernstein_1d(n, xyz[2]) 
+    def bernstein_3d(self, n, norm_point_cloud):
+        N = norm_point_cloud.shape[0]
+        x = norm_point_cloud[:, 0]
+        y = norm_point_cloud[:, 1]
+        z = norm_point_cloud[:, 2]
 
-        # Combine into 3D basis
-        B_xyz = []
-        for i in range(n + 1):
-            for j in range(n + 1):
-                for k in range(n + 1):
-                    B_xyz.append(B_x[i] * B_y[j] * B_z[k])
+        # Compute 1D bases for all points using bernstein_1d
+        Bx = self.bernstein_1d(n, x).T 
+        By = self.bernstein_1d(n, y).T  
+        Bz = self.bernstein_1d(n, z).T 
 
-        return np.array(B_xyz)
+        # Construct full 3D basis 
+        A = np.empty((N, (n+1)**3))
+        idx = 0
+        for i in range(n+1):
+            for j in range(n+1):
+                for k in range(n+1):
+                    A[:, idx] = Bx[:, i] * By[:, j] * Bz[:, k]
+                    idx += 1
+        return A
+
 
     # Given C_expected and C_measured point clouds (Nx3), fit a BPoly model
-    def fit(self, expected, measured):
-        assert measured.shape == expected.shape # Ensure we have correspondance
-        assert measured.shape[1] == 3 # Both sets must be Nx3
+    def fit(self, measured, expected):
+        assert measured.shape == expected.shape
 
-        # Normalize for BPoly basis
+        # Error target
+        delta = expected - measured
+
+        # Normalization (add 10% padding)
         self.min_ = measured.min(axis=0)
         self.max_ = measured.max(axis=0)
-        norm_points = (measured - self.min_) / (self.max_ - self.min_)
+        pad = 0.10 * (self.max_ - self.min_ + 1e-9)
+        self.min_ -= pad
+        self.max_ += pad
 
-        n = self.order
-        num_points = norm_points.shape[0]
+        norm_point_cloud = (measured - self.min_) / (self.max_ - self.min_ + 1e-9)
+        A = self.bernstein_3d(self.order, norm_point_cloud)
 
-        # Build coeff matrix A
-        A = np.zeros((num_points, (n + 1) ** 3))
-        for i in range(num_points):
-            basis_vector = self.bernstein_3d_basis(n, norm_points[i]) 
-            A[i, :] = basis_vector
-
-        # Solve least squares independently for x, y, z
-        self.coeff_x, *_ = np.linalg.lstsq(A, expected[:, 0], rcond=None)
-        self.coeff_y, *_ = np.linalg.lstsq(A, expected[:, 1], rcond=None)
-        self.coeff_z, *_ = np.linalg.lstsq(A, expected[:, 2], rcond=None)
+        # Least squares solution
+        # AtA * coeff = Atb <=> argmin(||A*coeff - delta||^2)
+        noise = 1e-6 # We add a noise term for numerical stability
+        # See https://en.wikipedia.org/wiki/Tikhonov_regularization
+        # I followed the paper and added noise and it worked so imma just keep it...
+        # Else it blows up to >45mm on higher than 11 orders
+        AtA = A.T @ A + noise * np.eye(A.shape[1])
+        Atb = A.T @ delta
+        self.coeff = np.linalg.solve(AtA, Atb)
 
     # Apply fitted BPoly correction to new PC
-    def apply(self, points):
-        assert self.coeff_x is not None, "Must fit() first."
+    def apply(self, point_cloud):
+        assert self.coeff is not None
+        norm_point_cloud = (point_cloud - self.min_) / (self.max_ - self.min_ + 1e-9)
 
-        norm_points = (points - self.min_) / (self.max_ - self.min_)
-        norm_points = np.clip(norm_points, 0.0, 1.0)
-
-        n = self.order
-        num_points = norm_points.shape[0]
-
-        # Build coeff matrix A
-        A = np.zeros((num_points, (n + 1) ** 3))
-        for i in range(num_points):
-            basis_vector = self.bernstein_3d_basis(n, norm_points[i]) 
-            A[i, :] = basis_vector
-
-        x_corrected = A @ self.coeff_x
-        y_corrected = A @ self.coeff_y
-        z_corrected = A @ self.coeff_z
-        return np.stack((x_corrected, y_corrected, z_corrected), axis=1)
-    
-    
+        A = self.bernstein_3d(self.order, norm_point_cloud)
+        correction = A @ self.coeff
+        return point_cloud + correction
