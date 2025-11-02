@@ -199,5 +199,3 @@ for letter in datasets:
     writer.write_output_pa1(C_expected_frames, p_pivot_em, p_pivot_opt, output_path1)
     writer.write_output_pa2(tip_positions_ct, output_path2)
     
-
-    

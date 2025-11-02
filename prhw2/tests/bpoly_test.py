@@ -61,15 +61,15 @@ if __name__ == "__main__":
             print("FAIL\n")
 
     
-    # # Play around with order to underfitting -> good fit
-    # for i in range (1, 10):
-    #     print(f"Testing BPoly order: {i}")
-    #     error_stats = random_bpoly_test(order=i)
-    #     print("BPoly Fit Error Stats:\n")
-    #     calcerr.print_error_stats(error_stats)
-    #     if (error_stats['rms'] >= 0.02):
-    #         print("FAIL")
-    #     else:
-    #         print("PASS")
+    # Play around with order to underfitting -> good fit
+    for i in range (1, 10):
+        print(f"Testing BPoly order: {i}")
+        error_stats = random_bpoly_test(order=i)
+        print("BPoly Fit Error Stats:\n")
+        calcerr.print_error_stats(error_stats)
+        if (error_stats['rms'] >= 0.02):
+            print("FAIL")
+        else:
+            print("PASS")
         
 

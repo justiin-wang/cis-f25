@@ -90,7 +90,7 @@ Min error:       0.000000
 Max error:       0.000000
 PASS
 
-Basline to Beat (no Bpoly correction)
+BASELINE TO BEAT (NO BPOLY CORRECTION):
 Dataset a:
 Pivot EM error: 0.000000
 Pivot OPT error: 0.000000
@@ -127,7 +127,7 @@ Pivot OPT error: 0.000000
 Mean RMS Registration error: 1.705271
 Mean RMS Tip Position error: 2.322526
 
-Current with 20 iterations:
+WITH BPOLY CORRECTION:
 Dataset a:
 Pivot EM error: 0.000000
 Pivot OPT error: 0.000000
@@ -141,7 +141,7 @@ Mean RMS Registration error: 0.502218
 Mean RMS Tip Position error: 0.027752
 
 Dataset c:
-Pivot EM error: 0.031623
+Pivot EM error: 0.024495
 Pivot OPT error: 0.014142
 Mean RMS Registration error: 0.522093
 Mean RMS Tip Position error: 0.027866
@@ -153,13 +153,13 @@ Mean RMS Registration error: 0.012221
 Mean RMS Tip Position error: 0.005000
 
 Dataset e:
-Pivot EM error: 0.076158
+Pivot EM error: 0.120830
 Pivot OPT error: 0.000000
 Mean RMS Registration error: 1.577330
-Mean RMS Tip Position error: 0.136778
+Mean RMS Tip Position error: 0.122705
 
 Dataset f:
-Pivot EM error: 0.400125
+Pivot EM error: 0.260192
 Pivot OPT error: 0.000000
 Mean RMS Registration error: 1.705271
-Mean RMS Tip Position error: 0.294502
+Mean RMS Tip Position error: 0.239766
