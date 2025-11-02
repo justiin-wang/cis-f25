@@ -11,6 +11,8 @@ from utils import calculate_errors as calc
 data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
 out_dir = os.path.join(os.path.dirname(__file__), '..', 'out')
 datasets = ['a','b','c','d','e','f']
+#datasets = ['a']
+
 
 def compare_output_1(letter):
     # Ground truth and generated output 

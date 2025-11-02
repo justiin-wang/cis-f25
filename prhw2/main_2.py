@@ -5,6 +5,9 @@ from utils.bpoly import BPoly
 from utils import parse as parser
 from utils import plot as plotter
 from utils import write_out as writer
+from utils import calculate_errors as calcerr
+
+ERROR_DISTORTION_THRESHOLD = 2.0
 
 # Main script for PA2. Run from start to finish to produce all output.txt's
 
@@ -14,6 +17,7 @@ datasets = ['a', 'b', 'c', 'd', 'e', 'f'] # Only debug datasets, use for diffing
 
 
 for letter in datasets:
+    # Special case when we transition from debug to unknown sets
     prefix = 'debug' if letter <= 'g' else 'unknown'
 
     # File paths
@@ -59,14 +63,33 @@ for letter in datasets:
 
     #----------Step 2----------
     # Fit error function to polynomial
-    bpoly = BPoly(order=3)
-    bpoly.fit(C_measured_flat, C_expected_flat)
+    # If RMS error is high, use BPoly to fit and apply corrections
+    C_rms = calcerr.calculate_rms_error(C_measured_flat, C_expected_flat)
+    if (C_rms > ERROR_DISTORTION_THRESHOLD):
+        bpoly = None
+        order = 0
+        best_rms = np.inf
 
-    # Interpolate and apply corrections
-    # C_predicted_flat = bpoly.apply(C_measured_flat)
-    # C_predicted_frames = C_predicted_flat.reshape(C_frames.shape)
-    C_predicted_flat = C_measured_flat.copy() # rm bpoly
-    C_predicted_frames = C_frames.copy() # rm bpoly
+        print(f"Fitting distortion for {letter} with RMS error {C_rms:.4f} mm")
+        for test_order in range(1, 10):
+            test = BPoly(order=test_order)
+            test.fit(C_measured_flat, C_expected_flat)
+            test_corrected = test.apply(C_measured_flat)
+            test_error_rms = calcerr.calculate_rms_error(test_corrected, C_expected_flat)
+            print(f"    Test polynomial order {test_order}: RMS error {test_error_rms:.4f} mm")
+
+            if test_error_rms < best_rms:
+                best_rms = test_error_rms
+                order = test_order
+                bpoly = test
+        
+        print(f"    Selected polynomial order {order} with RMS error {best_rms:.4f} mm")
+        # Interpolate and apply corrections
+        C_predicted_flat = bpoly.apply(C_measured_flat)
+        C_predicted_frames = C_predicted_flat.reshape(C_frames.shape)
+    else:
+        C_predicted_flat = C_measured_flat.copy() 
+        C_predicted_frames = C_frames.copy() 
 
     #----------Step 3----------
     # Repeat pivot calibration with corrected points
@@ -76,8 +99,10 @@ for letter in datasets:
     # Apply distortion correction to G_all
     G_all_corrected = np.zeros_like(G_all)
     for k in range(len(G_all)):
-        # G_all_corrected[k] = bpoly.apply(G_all[k])
-        G_all_corrected[k] = G_all[k]  # rm bpoly
+        if (C_rms > ERROR_DISTORTION_THRESHOLD):
+            G_all_corrected[k] = bpoly.apply(G_all[k])
+        else: 
+            G_all_corrected[k] = G_all[k]  # rm bpoly
 
     # calculate tool frame
     tool_origin = G_all_corrected[0].mean(axis=0)
@@ -132,8 +157,10 @@ for letter in datasets:
 
     G_fid_all_corrected = np.empty_like(G_fid_all)
     for i in range(G_fid_all.shape[0]):
-        # G_fid_all_corrected[i] = bpoly.apply(G_fid_all[i])
-        G_fid_all_corrected[i] = G_fid_all[i]  # rm bpoly
+        if (C_rms > ERROR_DISTORTION_THRESHOLD):
+            G_fid_all_corrected[i] = bpoly.apply(G_fid_all[i])
+        else: 
+            G_fid_all_corrected[i] = G_fid_all[i]  # rm bpoly
 
     # Compute tip positions in EM base frame
     tip_positions_em = np.zeros((b_ct.shape[0], 3))
@@ -152,8 +179,10 @@ for letter in datasets:
     print("G_nav_all shape:", G_nav_all.shape) # Should be (Nnav, Ng, 3)
     G_nav_corrected = np.empty_like(G_nav_all)
     for k in range(G_nav_all.shape[0]):
-        # G_nav_corrected[k] = bpoly.apply(G_nav_all[k])
-        G_nav_corrected[k] = G_nav_all[k]  # rm bpoly
+        if (C_rms > ERROR_DISTORTION_THRESHOLD):
+            G_nav_corrected[k] = bpoly.apply(G_nav_all[k])
+        else: 
+            G_nav_corrected[k] = G_nav_all[k]  # rm bpoly
 
     tip_positions_ct = np.zeros((G_nav_corrected.shape[0], 3))
     for k in range(G_nav_corrected.shape[0]):

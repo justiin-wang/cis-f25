@@ -6,6 +6,89 @@ Workflow:
 4. Do pivot calibration with corrections for distortion
 5. 
 
+Interesting: BPoly is only valid in the coordinate frame that it is trained on
+
+Clipping and scaling is not an issue:
+Testing BPoly order: 1
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
+
+Testing BPoly order: 2
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
+
+Testing BPoly order: 3
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
+
+Testing BPoly order: 4
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
+
+Testing BPoly order: 5
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
+
+Testing BPoly order: 6
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
+
+Testing BPoly order: 7
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
+
+Testing BPoly order: 8
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
+
+Testing BPoly order: 9
+Points analyzed: 1000
+Mean error:      0.000000
+RMS error:       0.000000
+Std deviation:   0.000000
+Min error:       0.000000
+Max error:       0.000000
+PASS
 
 Basline to Beat (no Bpoly correction)
 Dataset a:
