@@ -47,7 +47,7 @@ class BPoly:
         # Error target
         delta = expected - measured
 
-        # Normalization (add 10% padding)
+        # Normalization but add padding 
         self.min_ = measured.min(axis=0)
         self.max_ = measured.max(axis=0)
         pad = 0.10 * (self.max_ - self.min_ + 1e-9)
@@ -61,8 +61,8 @@ class BPoly:
         # AtA * coeff = Atb <=> argmin(||A*coeff - delta||^2)
         noise = 1e-6 # We add a noise term for numerical stability
         # See https://en.wikipedia.org/wiki/Tikhonov_regularization
-        # I followed the paper and added noise and it worked so imma just keep it...
-        # Else it blows up to >45mm on higher than 11 orders
+        # Added noise and it worked so imma just keep it...
+        # Else it blows up to >45mm on higher than 11 orders probably due to overfitting
         AtA = A.T @ A + noise * np.eye(A.shape[1])
         Atb = A.T @ delta
         self.coeff = np.linalg.solve(AtA, Atb)
