@@ -59,8 +59,6 @@ def find_closest_point_on_triangle(p, a, b, c):
     w = vc * denom
     return a + ab * v + ac * w
 
-import numpy as np
-
 def search_closest_points_on_mesh(p, vertices, triangles):
     """
     Find the closest point on a triangular mesh to a given 3D point p.

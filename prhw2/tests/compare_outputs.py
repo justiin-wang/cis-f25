@@ -44,7 +44,7 @@ def compare_output_1(letter):
 def compare_output_2(letter):
     # Ground truth and generated output 
     gt_path = os.path.join(data_dir, f"pa2-debug-{letter}-output2.txt")
-    my_path =  os.path.join(out_dir,  f"pa2-debug-{letter}-output2.txt")
+    my_path = os.path.join(out_dir,  f"pa2-debug-{letter}-output2.txt")
 
     # Debug filepaths
     if not os.path.exists(gt_path):

@@ -46,4 +46,22 @@ def parse_readings(path, num_trackers_bA, num_trackers_bB):
       coords = [float(x) for x in line.split(',')]
       body_B_markers_tr.append(coords[0:3])
   return body_A_markers_tr, body_B_markers_tr, num_sample_frames
+
+def parse_output(path):
+    with open(path, 'r') as f:
+        data = f.readlines()
+    header = data[0].split(' ') # For some reason the header delim in the given outputs is a space
+    num_samples = int(header[0].strip()) 
+
+    dk = []
+    ck = []
+    for line in data[1:1 + num_samples]:
+        vals = [float(x) for x in line.split()]
+        if len(vals) < 6:
+            raise ValueError(f"Strange input at line: {line}")
+        dk.append(vals[0:3])
+        ck.append(vals[3:6])
+
+    return np.array(dk), np.array(ck)
+  
     
