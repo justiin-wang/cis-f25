@@ -1,15 +1,6 @@
 import numpy as np
 
 def find_closest_point_on_triangle(p, a, b, c):
-    """
-    Compute the closest point on triangle (a, b, c) to point p.
-    Based on barycentric coordinates and clamping as per Dr. Taylor's slides.
-    
-    Args:
-        p, a, b, c : np.ndarray of shape (3,)
-    Returns:
-        q : np.ndarray (3,) closest point on triangle
-    """
     # Compute edges and vector from a→p
     ab = b - a
     ac = c - a
@@ -59,28 +50,14 @@ def find_closest_point_on_triangle(p, a, b, c):
     w = vc * denom
     return a + ab * v + ac * w
 
-def search_closest_points_on_mesh(p, vertices, triangles):
-    """
-    Find the closest point on a triangular mesh to a given 3D point p.
-    Performs a brute-force linear search over all triangles.
-
-    Args:
-        p : (3,) ndarray — query point
-        vertices : (N, 3) ndarray — mesh vertex coordinates
-        triangles : (M, 3) ndarray — vertex indices of triangles
-
-    Returns:
-        q_closest : (3,) ndarray — closest point on the mesh
-        min_dist  : float — Euclidean distance from p to q_closest
-        tri_index : int — index of the closest triangle
-    """
+def linear_search_closest_points_on_mesh(p, vertices, triangles):
     min_dist = np.inf
     q_closest = None
     tri_index = -1
 
-    for i, tri in enumerate(triangles):
-        a, b, c = vertices[tri[0]], vertices[tri[1]], vertices[tri[2]]
-        q = find_closest_point_on_triangle(p, a, b, c)
+    # Simple linear search over all triangles
+    for i, tri in enumerate(triangles): 
+        q = find_closest_point_on_triangle(p, vertices[tri[0]], vertices[tri[1]], vertices[tri[2]])
         dist = np.linalg.norm(p - q)
         if dist < min_dist:
             min_dist = dist

@@ -80,7 +80,7 @@ for letter in data_sets:
     errors = []
     tri_idxs = []
     for k in d:
-        c_k, e_k, idx = icp.search_closest_points_on_mesh(k, vertices, triangles)
+        c_k, e_k, idx = icp.linear_search_closest_points_on_mesh(k, vertices, triangles)
         closest_points.append(c_k)
         errors.append(e_k)
         tri_idxs.append(idx)
