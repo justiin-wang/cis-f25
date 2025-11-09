@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 from utils import parse as parser
 from utils import plot as plotter
 from utils import pcr as pcr 
+from utils import icp as icp
+from utils import calculate_errors as calcerrSS
 # ICP
 # We want to find a transformation T s.t. target = T(source)
 
@@ -67,3 +69,58 @@ print(d)
     
 F_reg = np.eye(4)  # Identity for PA3
 # Find C_k 
+
+# TEST
+d = np.asarray(d)
+
+# Some .sur readers return 6 ints per triangle (i1,i2,i3,n1,n2,n3); we only need first 3
+triangles = np.asarray(vertices_inds)[:, :3].astype(int)
+vertices  = np.asarray(vertices_ct, dtype=float)
+
+closest_points = []
+errors = []
+tri_idxs = []
+
+for d_k in d:
+    c_k, e_k, idx = icp.search_closest_points_on_mesh(d_k, vertices, triangles)
+    closest_points.append(c_k)
+    errors.append(e_k)
+    tri_idxs.append(idx)
+
+closest_points = np.asarray(closest_points)
+errors = np.asarray(errors)
+
+# Optional quick viz overlay (your plotter expects Nx3 clouds)
+try:
+    plotter.plot_data_2(d, closest_points,
+                        "Pointer tip samples (B frame)",
+                        "Closest points on CT surface")
+    plt.show()
+except Exception as _:
+    pass  # plotting is optional; don’t fail PA3 if display isn’t available
+
+# Write PA3 output file (spec: Nsamps + file name header, then d, c, |d-c|)
+import os, re
+
+Nsamps = d.shape[0]
+
+# Derive dataset letter from the sample readings filename you used above
+# e.g., "data/PA3-A-Debug-SampleReadingsTest.txt" -> "A"
+readings_path = "data/PA3-A-Debug-SampleReadingsTest.txt"
+m = re.search(r'PA3-([A-Z])', os.path.basename(readings_path))
+dataset_letter = m.group(1) if m else "X"
+
+out_dir = "OUTPUT"
+os.makedirs(out_dir, exist_ok=True)
+out_name = f"pa3-{dataset_letter}-Output.txt"
+out_path = os.path.join(out_dir, out_name)
+
+with open(out_path, "w") as f:
+    f.write(f"{Nsamps}, \"{out_name}\"\n")
+    for dk, ck, ek in zip(d, closest_points, errors):
+        f.write(f"{dk[0]:.6f} {dk[1]:.6f} {dk[2]:.6f} "
+                f"{ck[0]:.6f} {ck[1]:.6f} {ck[2]:.6f} {ek:.6f}\n")
+
+plt.show()
+print(f"[PA3] Wrote {Nsamps} rows to {out_path}")
+# -------------------------------------------------------------------------------
