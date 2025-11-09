@@ -1,6 +1,8 @@
 import numpy as np
-from utils import parser
-
+import matplotlib.pyplot as plt
+from utils import parse as parser
+from utils import plot as plotter
+from utils import pcr as pcr 
 # ICP
 # We want to find a transformation T s.t. target = T(source)
 
@@ -22,7 +24,46 @@ from utils import parser
 
 # Note: suffix of arrays containing points is the frame it is defined for
 # bA is body A, bB is bodyB, ct is CT scan, tr is tracker base
-body_A_markers_bA, body_A_tip_bA, num_trackers_bA = parser.parse_rigid_bodies("data/Problem3-BodyA.txt")
+body_A_markers_bA, body_A_tip_bA, num_trackers_bA = parser.parse_rigid_bodies("data/Problem3-BodyA.txt")  
 body_B_markers_bB, body_B_tip_bB, num_trackers_bB = parser.parse_rigid_bodies("data/Problem3-BodyB.txt")
 vertices_ct, vertices_inds = parser.parse_mesh("data/Problem3Mesh.sur")
-body_A_markers_tr, body_B_markers_tr = parser.parse_readings("data/PA3-A-Debug-SampleReadingsTest.txt", num_trackers_bA, num_trackers_bB)
+body_A_markers_tr, body_B_markers_tr, num_samples = parser.parse_readings("data/PA3-A-Debug-SampleReadingsTest.txt", num_trackers_bA, num_trackers_bB)
+# body_A_markers_bA = np.array(body_A_markers_bA)
+# body_B_markers_bB = np.array(body_B_markers_bB)
+# plotter.plot_data_2(body_A_markers_bA, body_B_markers_bB, "Body A Markers (Body A Frame)", "Body B Markers (Body B Frame)")
+# vertices_ct = np.array(vertices_ct)
+# plotter.plot_data_1(vertices_ct, "CT Scan Mesh Vertices")
+# body_A_markers_tr = np.array(body_A_markers_tr)
+# body_B_markers_tr = np.array(body_B_markers_tr)
+# fig, ax = plotter.plot_data_2(body_A_markers_tr, body_B_markers_tr, "Body A Markers (Tracker Frame)", "Body B Markers (Tracker Frame)")
+# plt.show()
+body_A_markers_bA = np.array(body_A_markers_bA)
+body_B_markers_bB = np.array(body_B_markers_bB)
+body_A_markers_tr = np.array(body_A_markers_tr)
+body_B_markers_tr = np.array(body_B_markers_tr)
+
+# Compute F_A,k and F_B,k for each sample frame
+F_A = []
+F_B = []
+
+for k in range(num_samples):
+    # body_A_markers_bA : (N_A,3)
+    # body_A_markers_tr[k] : (N_A,3)
+    F_Ak = pcr.point_cloud_registration(body_A_markers_bA, body_A_markers_tr[k*6:k*6+6])
+    F_Bk = pcr.point_cloud_registration(body_B_markers_bB, body_B_markers_tr[k*6:k*6+6])
+    F_A.append(F_Ak)
+    F_B.append(F_Bk)
+
+F_A = np.array(F_A)  
+F_B = np.array(F_B)  
+
+d = []  # d_k points
+for k in range(num_samples):
+    body_A_tip_bA_homog = np.hstack((body_A_tip_bA, [1]))
+    d_k_homog = np.linalg.inv(F_B[k]) @ F_A[k] @ body_A_tip_bA_homog
+    d_k = d_k_homog[:3]  # Convert back to Cartesian coordinates
+    d.append(d_k)
+print(d)
+    
+F_reg = np.eye(4)  # Identity for PA3
+# Find C_k 

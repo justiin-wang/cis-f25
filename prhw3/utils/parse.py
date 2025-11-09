@@ -45,5 +45,5 @@ def parse_readings(path, num_trackers_bA, num_trackers_bB):
     for line in data[1 + i * num_total_LEDs + num_trackers_bA : 1 + i * num_total_LEDs + num_trackers_bA + num_trackers_bB]:
       coords = [float(x) for x in line.split(',')]
       body_B_markers_tr.append(coords[0:3])
-  return body_A_markers_tr, body_B_markers_tr
+  return body_A_markers_tr, body_B_markers_tr, num_sample_frames
     
