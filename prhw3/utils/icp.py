@@ -65,6 +65,30 @@ def linear_search_closest_points_on_mesh(p, vertices, triangles):
             tri_index = i
 
     return q_closest, min_dist, tri_index
+def ktree_search_closest_points_on_mesh(p, vertices, triangles, tree, centroids, k=10):
+    """
+    Find closest point on mesh to p using KD-Tree over triangle centroids.
+    """
+    # 1. Query k nearest triangle centroids to point p
+    dists, idxs = tree.query(p, k=k)  # can return single or array of indices
+    if np.isscalar(idxs):
+        idxs = [idxs]
+
+    # 2. Search only these triangles
+    min_dist = np.inf
+    q_closest = None
+    tri_index = -1
+
+    for i in idxs:
+        tri = triangles[i]
+        q = find_closest_point_on_triangle(p, vertices[tri[0]], vertices[tri[1]], vertices[tri[2]])
+        dist = np.linalg.norm(p - q)
+        if dist < min_dist:
+            min_dist = dist
+            q_closest = q
+            tri_index = i
+
+    return q_closest, min_dist, tri_index
     
 
 def test_closest_point_on_triangle():
