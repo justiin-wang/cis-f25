@@ -49,7 +49,7 @@ for letter in data_sets:
     triangles = np.array(vertices_inds[:, :3], dtype=int) # Only i1,i2,i3 needed
     vertices  = np.array(vertices_ct, dtype=float)
 
-    mesh_tree = kdtree(vertices, triangles)
+    mesh_tree = kdtree(vertices, triangles,8)
 
     # Compute F_A,k and F_B,k for each sample frame using PCR
     F_A = []
