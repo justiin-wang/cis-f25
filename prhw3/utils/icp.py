@@ -1,7 +1,8 @@
 import numpy as np
-import numpy as np
 
 def project_on_segment(c, p, q):
+
+    # Detailed on slide 15
     pq = q - p
     t = np.dot(c - p, pq) / np.dot(pq, pq)
     t = max(0, min(1, t))
@@ -14,30 +15,27 @@ def find_closest_point(a, p, q, r):
     rp = r - p
 
     # Solve least-squares for barycentric coords (slide 11)
-    A = np.column_stack((qp,     rp))        # 3×2 matrix
-    b = a - p                            # 3×1
+    A = np.column_stack((qp, rp))     
+    b = a - p                            
 
     # λ, μ = least-squares solution
     lam_mu, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
     lam, mu = lam_mu
 
-    # Interior test (slide 12/15)
+    # Interior of triangle (slide 12 and 15)
     if lam >= 0 and mu >= 0 and lam + mu <= 1:
         return p + lam * qp + mu * rp
 
     # Otherwise determine which edge region (slide 12/15)
-    # Region tests using barycentric coordinates:
-    # λ < 0 → edge (r,p)
-    # μ < 0 → edge (p,q)
-    # λ + μ > 1 → edge (q,r)
+    c = p + lam * qp + mu * rp   
 
-    c = p + lam * qp + mu * rp   # unconstrained projection
-
-    if lam < 0:          # region near edge r-p
+    # Near PR
+    if lam < 0:        
         return project_on_segment(c, r, p)
-    if mu < 0:           # region near edge p-q
+    # Near PQ
+    if mu < 0:         
         return project_on_segment(c, p, q)
-    # else λ + μ > 1 → region near edge q-r
+    # Else near QR
     return project_on_segment(c, q, r)
 
 
@@ -58,12 +56,12 @@ def linear_search_closest_points_on_mesh(p, vertices, triangles):
     return q_closest, min_dist, tri_index
 
 def ktree_search_closest_points_on_mesh(p, vertices, triangles, tree, centroids, k=10):
-    # 1. Query k nearest triangle centroids to point p
+    # Query k nearest triangle centroids to point p
     dists, idxs = tree.query(p, k=k)  # can return single or array of indices
     if np.isscalar(idxs):
         idxs = [idxs]
 
-    # 2. Search only these triangles
+    # Search only these triangles
     min_dist = np.inf
     q_closest = None
     tri_index = -1

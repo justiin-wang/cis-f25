@@ -6,10 +6,6 @@ import numpy as np
 from utils import parse as parser
 from utils import calculate_errors as calc
 
-# ==========================================================
-# Compare PA3/PA4 outputs (debug datasets only)
-# ==========================================================
-
 data_dir = os.path.join(os.path.dirname(__file__), '..', 'data')
 out_dir  = os.path.join(os.path.dirname(__file__), '..', 'out')
 datasets = ['A', 'B', 'C', 'D', 'E', 'F']  # Debug sets only
