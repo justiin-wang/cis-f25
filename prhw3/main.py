@@ -32,6 +32,10 @@ body_A_markers_bA, body_A_tip_bA, num_trackers_bA = parser.parse_rigid_bodies("d
 body_B_markers_bB, body_B_tip_bB, num_trackers_bB = parser.parse_rigid_bodies("data/Problem3-BodyB.txt")
 vertices_ct, vertices_inds = parser.parse_mesh("data/Problem3Mesh.sur")
 
+vertices_inds = np.array(vertices_inds)
+triangles = np.array(vertices_inds[:, :3], dtype=int) # Only i1,i2,i3 needed
+vertices  = np.array(vertices_ct, dtype=float)
+
 start = time.perf_counter()
 for letter in data_sets:
     print(f"----------Processing dataset {letter}----------")
@@ -45,11 +49,7 @@ for letter in data_sets:
     body_A_markers_tr = np.array(body_A_markers_tr)
     body_B_markers_tr = np.array(body_B_markers_tr)
 
-    vertices_inds = np.array(vertices_inds)
-    triangles = np.array(vertices_inds[:, :3], dtype=int) # Only i1,i2,i3 needed
-    vertices  = np.array(vertices_ct, dtype=float)
-
-    mesh_tree = kdtree(vertices, triangles,8)
+    mesh_tree = kdtree(vertices, triangles)
 
     # Compute F_A,k and F_B,k for each sample frame using PCR
     F_A = []
