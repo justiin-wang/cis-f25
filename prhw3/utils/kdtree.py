@@ -46,7 +46,7 @@ class KDTreeTriangles:
 
         for tri_idx in node.tri_indices:
             tri = self.triangles[tri_idx]
-            q = icp.find_closest_point_on_triangle(p, self.vertices[tri[0]], self.vertices[tri[1]], self.vertices[tri[2]])
+            q = icp.find_closest_point(p, self.vertices[tri[0]], self.vertices[tri[1]], self.vertices[tri[2]])
             dist = np.linalg.norm(p - q)
             if best is None or dist < best[0]:
                 best = (dist, q, [tri_idx])

@@ -1,54 +1,45 @@
 import numpy as np
+import numpy as np
 
-def find_closest_point_on_triangle(p, a, b, c):
-    # Compute edges and vector from a→p
-    ab = b - a
-    ac = c - a
-    ap = p - a
+def project_on_segment(c, p, q):
+    pq = q - p
+    t = np.dot(c - p, pq) / np.dot(pq, pq)
+    t = max(0, min(1, t))
+    return p + t * pq
 
-    # Compute dot products
-    d1 = np.dot(ab, ap)
-    d2 = np.dot(ac, ap)
-    if d1 <= 0 and d2 <= 0:
-        return a  # Closest to vertex A
+def find_closest_point(a, p, q, r):
 
-    # Check if in vertex region around B
-    bp = p - b
-    d3 = np.dot(ab, bp)
-    d4 = np.dot(ac, bp)
-    if d3 >= 0 and d4 <= d3:
-        return b  # Closest to vertex B
+    # Edge vectors
+    qp = q - p
+    rp = r - p
 
-    # Check if on edge AB
-    vc = d1 * d4 - d3 * d2
-    if vc <= 0 and d1 >= 0 and d3 <= 0:
-        v = d1 / (d1 - d3)
-        return a + v * ab
+    # Solve least-squares for barycentric coords (slide 11)
+    A = np.column_stack((qp,     rp))        # 3×2 matrix
+    b = a - p                            # 3×1
 
-    # Check if in vertex region around C
-    cp = p - c
-    d5 = np.dot(ab, cp)
-    d6 = np.dot(ac, cp)
-    if d6 >= 0 and d5 <= d6:
-        return c  # Closest to vertex C
+    # λ, μ = least-squares solution
+    lam_mu, _, _, _ = np.linalg.lstsq(A, b, rcond=None)
+    lam, mu = lam_mu
 
-    # Check if on edge AC
-    vb = d5 * d2 - d1 * d6
-    if vb <= 0 and d2 >= 0 and d6 <= 0:
-        w = d2 / (d2 - d6)
-        return a + w * ac
+    # Interior test (slide 12/15)
+    if lam >= 0 and mu >= 0 and lam + mu <= 1:
+        return p + lam * qp + mu * rp
 
-    # Check if on edge BC
-    va = d3 * d6 - d5 * d4
-    if va <= 0 and (d4 - d3) >= 0 and (d5 - d6) >= 0:
-        w = (d4 - d3) / ((d4 - d3) + (d5 - d6))
-        return b + w * (c - b)
+    # Otherwise determine which edge region (slide 12/15)
+    # Region tests using barycentric coordinates:
+    # λ < 0 → edge (r,p)
+    # μ < 0 → edge (p,q)
+    # λ + μ > 1 → edge (q,r)
 
-    # Inside face region — compute barycentric coordinates
-    denom = 1.0 / (va + vb + vc)
-    v = vb * denom
-    w = vc * denom
-    return a + ab * v + ac * w
+    c = p + lam * qp + mu * rp   # unconstrained projection
+
+    if lam < 0:          # region near edge r-p
+        return project_on_segment(c, r, p)
+    if mu < 0:           # region near edge p-q
+        return project_on_segment(c, p, q)
+    # else λ + μ > 1 → region near edge q-r
+    return project_on_segment(c, q, r)
+
 
 def linear_search_closest_points_on_mesh(p, vertices, triangles):
     min_dist = np.inf
@@ -57,7 +48,7 @@ def linear_search_closest_points_on_mesh(p, vertices, triangles):
 
     # Simple linear search over all triangles
     for i, tri in enumerate(triangles): 
-        q = find_closest_point_on_triangle(p, vertices[tri[0]], vertices[tri[1]], vertices[tri[2]])
+        q = find_closest_point(p, vertices[tri[0]], vertices[tri[1]], vertices[tri[2]])
         dist = np.linalg.norm(p - q)
         if dist < min_dist:
             min_dist = dist
@@ -65,10 +56,8 @@ def linear_search_closest_points_on_mesh(p, vertices, triangles):
             tri_index = i
 
     return q_closest, min_dist, tri_index
+
 def ktree_search_closest_points_on_mesh(p, vertices, triangles, tree, centroids, k=10):
-    """
-    Find closest point on mesh to p using KD-Tree over triangle centroids.
-    """
     # 1. Query k nearest triangle centroids to point p
     dists, idxs = tree.query(p, k=k)  # can return single or array of indices
     if np.isscalar(idxs):
@@ -81,7 +70,7 @@ def ktree_search_closest_points_on_mesh(p, vertices, triangles, tree, centroids,
 
     for i in idxs:
         tri = triangles[i]
-        q = find_closest_point_on_triangle(p, vertices[tri[0]], vertices[tri[1]], vertices[tri[2]])
+        q = find_closest_point(p, vertices[tri[0]], vertices[tri[1]], vertices[tri[2]])
         dist = np.linalg.norm(p - q)
         if dist < min_dist:
             min_dist = dist
@@ -92,16 +81,53 @@ def ktree_search_closest_points_on_mesh(p, vertices, triangles, tree, centroids,
     
 
 def test_closest_point_on_triangle():
-    # Simple test: point near triangle in XY-plane
-    a = np.array([0., 0., 0.])
-    b = np.array([1., 0., 0.])
-    c = np.array([0., 1., 0.])
+    # Define simple triangle
+    p = np.array([0., 0., 0.])
+    q = np.array([1., 0., 0.])
+    r = np.array([0., 1., 0.])
 
-    # point above center
-    p = np.array([0.3, 0.3, 1.])
-    q = find_closest_point_on_triangle(p, a, b, c)
-    print(q)  # Expect ≈ [0.3, 0.3, 0.]
-    assert np.allclose(q, np.array([0.3, 0.3, 0.])), "FAIL"
+    # Point near vertex p
+    a = np.array([-0.5, -0.4, 0.2])
+    expected = p
+    result = find_closest_point(a, p, q, r)
+    assert np.allclose(result, expected), f"FAIL"
+
+     # Point beyond q
+    a = np.array([1.3, -0.2, 0.5])
+    expected = q
+    result = find_closest_point(a, p, q, r)
+    assert np.allclose(result, expected), f"FAIL"
+
+    # Point beyond r
+    a = np.array([-0.2, 1.2, 0.5])
+    expected = r
+    result = find_closest_point(a, p, q, r)
+    assert np.allclose(result, expected), f"FAIL"
+
+    # Point pq
+    a = np.array([0.5, -0.3, 0.1])
+    expected = np.array([0.5, 0.0, 0.0])
+    result = find_closest_point(a, p, q, r)
+    assert np.allclose(result, expected), f"FAIL"
+
+    # Point pr
+    a = np.array([-0.2, 0.5, -0.1])
+    expected = np.array([0.0, 0.5, 0.0])
+    result = find_closest_point(a, p, q, r)
+    assert np.allclose(result, expected), f"FAIL"
+
+    # Point qr
+    a = np.array([0.6, 0.6, 0.3])
+    expected = np.array([0.5, 0.5, 0.0]) 
+    result = find_closest_point(a, p, q, r)
+    assert np.allclose(result, expected), f"FAIL"
+
+    # Point on triangle face
+    a = np.array([0.25, 0.25, 0.8])
+    expected = np.array([0.25, 0.25, 0.0])
+    result = find_closest_point(a, p, q, r)
+    assert np.allclose(result, expected), f"FAIL"    
 
 if __name__ == "__main__":
-    test_closest_point_on_triangle()
+    test_closest_point_on_triangle() # If no assertion errors, all pass
+    print("All tests PASS") 
