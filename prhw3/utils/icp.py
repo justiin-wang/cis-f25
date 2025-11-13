@@ -55,7 +55,6 @@ def linear_search_closest_points_on_mesh(p, vertices, triangles):
             tri_index = i
 
     return q_closest, min_dist, tri_index
-<<<<<<< Updated upstream
 
 def ktree_search_closest_points_on_mesh(p, vertices, triangles, tree, centroids, k=10):
     # Query k nearest triangle centroids to point p
@@ -78,8 +77,6 @@ def ktree_search_closest_points_on_mesh(p, vertices, triangles, tree, centroids,
             tri_index = i
 
     return q_closest, min_dist, tri_index
-=======
->>>>>>> Stashed changes
     
 
 def test_closest_point_on_triangle():
