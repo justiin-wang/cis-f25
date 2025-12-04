@@ -13,7 +13,7 @@ import time
 # We now assume Freg is NOT identity, so we compute s_k = F_reg * d_k
 # Iterate until convergence to find F_reg, lets do until tiny change in F_reg OR mean error < threshold
 
-data_sets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J']
+data_sets = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'J'] # IDK why no I
 
 body_A_markers_bA, body_A_tip_bA, num_trackers_bA = parser.parse_rigid_bodies("data/Problem4-BodyA.txt")  
 body_B_markers_bB, body_B_tip_bB, num_trackers_bB = parser.parse_rigid_bodies("data/Problem4-BodyB.txt")
@@ -87,7 +87,7 @@ for letter in data_sets:
         F_reg_new = pcr.point_cloud_registration(d, closest_points)
 
         # Convergence check. Ether small change in F_reg or small mean error terminates loop
-        if np.linalg.norm(F_reg_new - F_reg) < tol_F or np.mean(errors) < 1e-5:
+        if np.linalg.norm(F_reg_new - F_reg) < tol_F or np.mean(errors) < 1e-5: # Played around with bounds we can look more later
             if np.mean(errors) > 1e-1:
                 print(f"FAIL: High mean error {np.mean(errors):.6f} at convergence.")
             F_reg = F_reg_new
@@ -100,6 +100,7 @@ for letter in data_sets:
             print("WARNING: Reached maximum iterations without convergence.")
 
     # Final closest points and errors with converged F_reg
+    # TODO maybe we can prevent a copy here?
     s = []
     for k in range(num_samples):
         H_d = np.append(d[k], 1.0)
@@ -119,7 +120,7 @@ for letter in data_sets:
     # Write out 
     output_path = f"./out/PA4-{letter}-{prefix}-Output.txt"
     writer.write_p4_output(s, closest_points, errors, output_path)
-end = time.perf_counter()
+end = time.perf_counter() # Timer for comparison to linear search
 print(f"Execution time: {end - start:.6f} seconds")
     
 
