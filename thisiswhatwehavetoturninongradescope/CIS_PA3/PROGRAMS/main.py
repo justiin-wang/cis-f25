@@ -75,7 +75,7 @@ for letter in data_sets:
     errors = np.asarray(errors)
 
     # Write out 
-    output_path = f"./out/PA3-{letter}-{prefix}-Output.txt"
+    output_path = f"./OUTPUT/PA3-{letter}-{prefix}-Output.txt"
     writer.write_p3_output(d, closest_points, errors, output_path)
 end = time.perf_counter()
 print(f"Execution time: {end - start:.6f} seconds")
